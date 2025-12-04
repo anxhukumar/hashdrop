@@ -34,9 +34,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
-	// mux.HandleFunc("POST /api/file/upload", handlers.HandlerUpload)
-	// mux.HandleFunc("GET /api/file/list")
-	// mux.HandleFunc("GET /api/verify", handlers.HandlerVerify)
+	mux.HandleFunc("POST /api/register", server.HandlerCreateUser)
 
 	port := cfg.Port
 	serv := &http.Server{

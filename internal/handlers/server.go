@@ -1,14 +1,20 @@
 package handlers
 
-import "github.com/anxhukumar/hashdrop/internal/store"
+import (
+	"log"
 
-// Server struct to give access of store to each handler as a method
+	"github.com/anxhukumar/hashdrop/internal/store"
+)
+
+// Server struct to give access of store and logger to each handler as a method
 type Server struct {
-	store *store.Store
+	store  *store.Store
+	logger *log.Logger
 }
 
 func NewServer(store *store.Store) *Server {
 	return &Server{
-		store: store,
+		store:  store,
+		logger: log.Default(),
 	}
 }
