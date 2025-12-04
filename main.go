@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/internal/config"
 	"github.com/anxhukumar/hashdrop/internal/handlers"
+	"github.com/anxhukumar/hashdrop/internal/store"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -16,9 +19,24 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Configure database connection
+	dbConn, err := sql.Open("sqlite3", cfg.DbURL)
+	if err != nil {
+		log.Fatalf("error opening database: %s", err)
+	}
+	defer dbConn.Close()
+
+	// Create store struct instance
+	store := store.NewStore(dbConn)
+	// Provide the store to the server
+	server := handlers.NewServer(store)
+
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /api/healthz", handlers.HandlerReadiness)
+	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
+	// mux.HandleFunc("POST /api/file/upload", handlers.HandlerUpload)
+	// mux.HandleFunc("GET /api/file/list")
+	// mux.HandleFunc("GET /api/verify", handlers.HandlerVerify)
 
 	port := cfg.Port
 	serv := &http.Server{
@@ -28,6 +46,6 @@ func main() {
 
 	log.Printf("Server running on port: %s\n", port)
 
-	// Logs error if server fails
+	// Log error if server fails.
 	log.Fatal(serv.ListenAndServe())
 }
