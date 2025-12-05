@@ -31,12 +31,12 @@ func LoadConfig() (*Config, error) {
 
 // Check if the configuration is valid
 func (c *Config) Validate() error {
-	// Invalid port error.
+	// Invalid port error
 	if c.Port == "" {
 		return fmt.Errorf("port cannot be empty")
 	}
 
-	// Invalid db url error.
+	// Invalid db url error
 	if c.DbURL == "" {
 		return fmt.Errorf("db url/path cannot be empty")
 	}
