@@ -18,7 +18,7 @@ func HashedPassword(password string) (string, error) {
 	}
 	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
 	if err != nil {
-		err := fmt.Errorf("couldn't hash password: %s", err)
+		err := fmt.Errorf("couldn't hash password: %w", err)
 		return "", err
 	}
 	return hash, nil

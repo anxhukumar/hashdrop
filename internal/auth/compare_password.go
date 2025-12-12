@@ -10,7 +10,7 @@ import (
 func CheckPasswordHash(password, hashed_password string) (bool, error) {
 	match, err := argon2id.ComparePasswordAndHash(password, hashed_password)
 	if err != nil {
-		err := fmt.Errorf("couldn't check password hash: %s", err)
+		err := fmt.Errorf("couldn't check password hash: %w", err)
 		return false, err
 	}
 	return match, nil
