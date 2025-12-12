@@ -11,17 +11,17 @@ import (
 
 func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
-	// Get decoded user json data
+	// Get decoded incoming user json data
 	var userIncoming UserIncoming
 	if err := DecodeJson(r, &userIncoming); err != nil {
-		RespondWithError(w, s.logger, "invalid JSON payload", err, http.StatusBadRequest)
+		RespondWithError(w, s.logger, "Invalid JSON payload", err, http.StatusBadRequest)
 		return
 	}
 
 	// Get hashed password
 	hashedPassword, err := auth.HashedPassword(userIncoming.Password)
 	if err != nil {
-		RespondWithError(w, s.logger, "invalid password or password too short", err, http.StatusBadRequest)
+		RespondWithError(w, s.logger, "Invalid password or password too short", err, http.StatusBadRequest)
 		return
 	}
 
@@ -33,7 +33,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userDbResponse, err := s.store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
-		RespondWithError(w, s.logger, "error while creating new user", err, http.StatusInternalServerError)
+		RespondWithError(w, s.logger, "Error while creating new user", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(UserOutgoing)
 	if err != nil {
-		RespondWithError(w, s.logger, "error while sending created user data", err, http.StatusInternalServerError)
+		RespondWithError(w, s.logger, "Error while sending created user data", err, http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

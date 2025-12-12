@@ -52,3 +52,6 @@ vendor/
 # Air live reload (if you use it)
 tmp/
 .air.toml
+
+# Todo notes
+TODO.txt

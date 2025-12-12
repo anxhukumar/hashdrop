@@ -17,3 +17,9 @@ type UserOutgoing struct {
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
 }
+
+// Login struct to receive from the user
+type UserLoginIncoming struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
