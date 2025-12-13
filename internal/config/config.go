@@ -8,8 +8,10 @@ import (
 )
 
 type Config struct {
-	Port  string
-	DbURL string
+	Port              string
+	DbURL             string
+	JWTSecret         string
+	AccessTokenExpiry string
 }
 
 // Load environment variables and return a config struct
@@ -18,8 +20,10 @@ func LoadConfig() (*Config, error) {
 	godotenv.Load()
 
 	cfg := &Config{
-		Port:  getEnv("PORT"),
-		DbURL: getEnv("DB"),
+		Port:              getEnv("PORT"),
+		DbURL:             getEnv("DB"),
+		JWTSecret:         getEnv("JWT_SECRET"),
+		AccessTokenExpiry: getEnv("JWT_ACCESS_TOKEN_EXPIRY"),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -31,14 +35,19 @@ func LoadConfig() (*Config, error) {
 
 // Check if the configuration is valid
 func (c *Config) Validate() error {
-	// Invalid port error
-	if c.Port == "" {
-		return fmt.Errorf("port cannot be empty")
+
+	// Maps to each port value for error messages
+	checks := map[string]string{
+		"PORT":                    c.Port,
+		"DB":                      c.DbURL,
+		"JWT_SECRET":              c.JWTSecret,
+		"JWT_ACCESS_TOKEN_EXPIRY": c.AccessTokenExpiry,
 	}
 
-	// Invalid db url error
-	if c.DbURL == "" {
-		return fmt.Errorf("db url/path cannot be empty")
+	for name, value := range checks {
+		if value == "" {
+			return fmt.Errorf("%v environment variable cannot be empty", name)
+		}
 	}
 
 	return nil

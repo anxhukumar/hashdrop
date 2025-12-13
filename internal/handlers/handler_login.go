@@ -34,4 +34,10 @@ func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get JWT token
+	jwtToken, err := GetJWTToken(userData, s.cfg.JWTSecret, s.cfg.AccessTokenExpiry)
+	if err != nil {
+		RespondWithError(w, s.logger, "Error while creating auth token", err, http.StatusBadRequest)
+		return
+	}
 }

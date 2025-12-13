@@ -28,8 +28,8 @@ func main() {
 
 	// Create store struct instance
 	store := store.NewStore(dbConn)
-	// Provide the store to the server
-	server := handlers.NewServer(store)
+	// Provide the store and config to the server
+	server := handlers.NewServer(store, cfg)
 
 	mux := http.NewServeMux()
 
