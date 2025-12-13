@@ -36,6 +36,7 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", server.HandlerReset)
 	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
 	mux.HandleFunc("POST /api/register", server.HandlerCreateUser)
+	mux.HandleFunc("POST /api/login", server.HandlerLogin)
 
 	port := cfg.Port
 	serv := &http.Server{

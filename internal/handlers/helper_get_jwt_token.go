@@ -1,20 +1,13 @@
 package handlers
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/anxhukumar/hashdrop/internal/auth"
 	"github.com/anxhukumar/hashdrop/internal/database"
 )
 
-func GetJWTToken(userData database.User, jwtSecret string, tokenExpiry string) (string, error) {
-
-	// Convert token expiry duration to appropirate format
-	expiry, err := time.ParseDuration(tokenExpiry)
-	if err != nil {
-		return "", fmt.Errorf("error parsing access token expiry duration string")
-	}
+func GetJWTToken(userData database.User, jwtSecret string, expiry time.Duration) (string, error) {
 
 	// Fetch access token
 	token, err := auth.MakeJWT(

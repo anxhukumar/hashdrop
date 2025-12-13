@@ -10,3 +10,5 @@ sql:
         overrides:
           - column: "users.id"
             go_type: "github.com/google/uuid.UUID"
+          - column: "refresh_tokens.user_id"
+            go_type: "github.com/google/uuid.UUID"

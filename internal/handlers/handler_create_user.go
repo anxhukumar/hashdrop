@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/internal/auth"
@@ -33,7 +32,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userDbResponse, err := s.store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error while creating new user", err, http.StatusInternalServerError)
+		RespondWithError(w, s.logger, "Error creating new user", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -45,12 +44,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		Email:     userDbResponse.Email,
 	}
 
-	res, err := json.Marshal(UserOutgoing)
-	if err != nil {
-		RespondWithError(w, s.logger, "Error while sending created user data", err, http.StatusInternalServerError)
-		return
+	if err := RespondWithJSON(w, http.StatusCreated, UserOutgoing); err != nil {
+		s.logger.Println("failed to send response:", err)
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(res)
 }

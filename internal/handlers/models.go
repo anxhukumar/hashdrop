@@ -23,3 +23,9 @@ type UserLoginIncoming struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+// Outgoing struct to send the user once they are logged in
+type UserLoginOutgoing struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
