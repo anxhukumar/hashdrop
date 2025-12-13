@@ -12,6 +12,7 @@ type Config struct {
 	DbURL             string
 	JWTSecret         string
 	AccessTokenExpiry string
+	Platform          string
 }
 
 // Load environment variables and return a config struct
@@ -24,6 +25,7 @@ func LoadConfig() (*Config, error) {
 		DbURL:             getEnv("DB"),
 		JWTSecret:         getEnv("JWT_SECRET"),
 		AccessTokenExpiry: getEnv("JWT_ACCESS_TOKEN_EXPIRY"),
+		Platform:          getEnv("PLATFORM"),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -42,6 +44,7 @@ func (c *Config) Validate() error {
 		"DB":                      c.DbURL,
 		"JWT_SECRET":              c.JWTSecret,
 		"JWT_ACCESS_TOKEN_EXPIRY": c.AccessTokenExpiry,
+		"PLATFORM":                c.Platform,
 	}
 
 	for name, value := range checks {

@@ -33,6 +33,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("POST /admin/reset", server.HandlerReset)
 	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
 	mux.HandleFunc("POST /api/register", server.HandlerCreateUser)
 
