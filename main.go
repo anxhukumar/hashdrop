@@ -37,6 +37,8 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
 	mux.HandleFunc("POST /api/register", server.HandlerCreateUser)
 	mux.HandleFunc("POST /api/login", server.HandlerLogin)
+	mux.HandleFunc("POST /api/refresh", server.HandlerRefreshToken)
+	mux.HandleFunc("POST /api/revoke", server.HandlerRevokeToken)
 
 	port := cfg.Port
 	serv := &http.Server{
