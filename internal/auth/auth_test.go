@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"encoding/hex"
+	"net/http"
 	"testing"
 	"time"
 
@@ -112,4 +114,92 @@ func TestJWT(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBearerToken(t *testing.T) {
+	tests := []struct {
+		name       string
+		authHeader string
+		wantToken  string
+		wantErr    bool
+	}{
+		{
+			name:       "Valid bearer token",
+			authHeader: "Bearer valid_token_123",
+			wantToken:  "valid_token_123",
+			wantErr:    false,
+		},
+		{
+			name:       "Missing Authorization header",
+			authHeader: "",
+			wantToken:  "",
+			wantErr:    true,
+		},
+		{
+			name:       "Missing Bearer prefix",
+			authHeader: "Basic credentials",
+			wantToken:  "",
+			wantErr:    true,
+		},
+		{
+			name:       "Empty token after Bearer",
+			authHeader: "Bearer ",
+			wantToken:  "",
+			wantErr:    true,
+		},
+		{
+			name:       "Token with extra whitespace",
+			authHeader: "Bearer   token_with_spaces   ",
+			wantToken:  "token_with_spaces",
+			wantErr:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			headers := http.Header{}
+			if tt.authHeader != "" {
+				headers.Set("Authorization", tt.authHeader)
+			}
+
+			gotToken, err := GetBearerToken(headers)
+
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("GetBearerToken() | error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if gotToken != tt.wantToken {
+				t.Errorf("GetBearerToken() | gotToken= %v, want %v", gotToken, tt.wantToken)
+			}
+		})
+	}
+}
+
+func TestMakeRefreshToken(t *testing.T) {
+	t.Run("Generates valid hex string", func(t *testing.T) {
+		token, err := MakeRefreshToken()
+		if err != nil {
+			t.Fatalf("MakeRefreshToken() unexpected error: %v", err)
+		}
+
+		// Should be 64 characters (32 bytes encoded as hex)
+		if len(token) != 64 {
+			t.Errorf("MakeRefreshToken() length = %d, want 64", len(token))
+		}
+
+		// Should be valid hex
+		_, err = hex.DecodeString(token)
+		if err != nil {
+			t.Errorf("MakeRefreshToken() produced invalid hex: %v", err)
+		}
+	})
+
+	t.Run("Generates unique tokens", func(t *testing.T) {
+		token1, _ := MakeRefreshToken()
+		token2, _ := MakeRefreshToken()
+
+		if token1 == token2 {
+			t.Error("MakeRefreshToken() generated duplicate tokens")
+		}
+	})
 }
