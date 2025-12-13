@@ -46,5 +46,6 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := RespondWithJSON(w, http.StatusCreated, UserOutgoing); err != nil {
 		s.logger.Println("failed to send response:", err)
+		return
 	}
 }

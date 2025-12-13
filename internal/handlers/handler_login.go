@@ -73,5 +73,6 @@ func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err := RespondWithJSON(w, http.StatusOK, loginResponse); err != nil {
 		s.logger.Println("failed to send login response:", err)
+		return
 	}
 }

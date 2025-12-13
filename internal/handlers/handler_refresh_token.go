@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 )
 
@@ -16,7 +18,14 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 	// Get userdata from refresh token
 	user, err := s.store.Queries.GetUserFromRefreshToken(r.Context(), refreshToken.RefreshToken)
 	if err != nil {
-		RespondWithError(w, s.logger, "Invalid or expired refresh token", err, http.StatusUnauthorized)
+		// Check if this is a no rows error or actual db error
+		if errors.Is(err, sql.ErrNoRows) {
+			// Token doesn't exist, is revoked, or is expired
+			RespondWithError(w, s.logger, "Invalid or expired refresh token", err, http.StatusUnauthorized)
+			return
+		}
+		// Actual db error
+		RespondWithError(w, s.logger, "Database error", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -33,5 +42,6 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := RespondWithJSON(w, http.StatusOK, res); err != nil {
 		s.logger.Println("failed to send new access token response:", err)
+		return
 	}
 }

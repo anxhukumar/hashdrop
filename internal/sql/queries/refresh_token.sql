@@ -9,11 +9,6 @@ VALUES (
 )
 RETURNING *;
 
--- name: GetRefreshToken :one
-SELECT *
-FROM refresh_tokens
-WHERE token = ?;
-
 -- name: GetUserFromRefreshToken :one
 SELECT users.*
 FROM users
