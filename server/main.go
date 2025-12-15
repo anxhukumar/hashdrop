@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/anxhukumar/hashdrop/internal/config"
-	"github.com/anxhukumar/hashdrop/internal/handlers"
-	"github.com/anxhukumar/hashdrop/internal/store"
+	"github.com/anxhukumar/hashdrop/server/internal/config"
+	"github.com/anxhukumar/hashdrop/server/internal/handlers"
+	"github.com/anxhukumar/hashdrop/server/internal/store"
 	_ "github.com/mattn/go-sqlite3"
 )
 

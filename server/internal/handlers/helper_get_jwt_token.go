@@ -3,8 +3,8 @@ package handlers
 import (
 	"time"
 
-	"github.com/anxhukumar/hashdrop/internal/auth"
-	"github.com/anxhukumar/hashdrop/internal/database"
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
+	"github.com/anxhukumar/hashdrop/server/internal/database"
 )
 
 func GetJWTToken(userData database.User, jwtSecret string, expiry time.Duration) (string, error) {

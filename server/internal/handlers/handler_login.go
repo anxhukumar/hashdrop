@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/anxhukumar/hashdrop/internal/auth"
-	"github.com/anxhukumar/hashdrop/internal/database"
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
+	"github.com/anxhukumar/hashdrop/server/internal/database"
 )
 
 func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {

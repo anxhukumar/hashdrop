@@ -3,8 +3,8 @@ package handlers
 import (
 	"log"
 
-	"github.com/anxhukumar/hashdrop/internal/config"
-	"github.com/anxhukumar/hashdrop/internal/store"
+	"github.com/anxhukumar/hashdrop/server/internal/config"
+	"github.com/anxhukumar/hashdrop/server/internal/store"
 )
 
 // Server struct to give access of store and logger to each handler as a method

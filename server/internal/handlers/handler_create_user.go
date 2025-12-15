@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/anxhukumar/hashdrop/internal/auth"
-	"github.com/anxhukumar/hashdrop/internal/database"
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
+	"github.com/anxhukumar/hashdrop/server/internal/database"
 	"github.com/google/uuid"
 )
 

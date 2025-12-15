@@ -1,4 +1,4 @@
-module github.com/anxhukumar/hashdrop
+module github.com/anxhukumar/hashdrop/server
 
 go 1.25.1
 
