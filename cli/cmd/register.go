@@ -5,24 +5,37 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/anxhukumar/hashdrop/cli/internal/auth"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
 	"github.com/spf13/cobra"
 )
 
-// registerCmd represents the register command
+const minPasswordLen = 8
+
+// RegisterCmd represents the register command
 var registerCmd = &cobra.Command{
-	Use:   "register",
-	Short: "Register a new hashdrop account",
+	Use:          "register",
+	Short:        "Register a new hashdrop account",
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		email, err := prompt.ReadLine("Email: ")
 		if err != nil {
 			return err
 		}
 
+		fmt.Println("\nPassword requirements:")
+		fmt.Printf("• Minimum length: %d characters\n\n", minPasswordLen)
+
 		password, err := prompt.ReadPassword("Password: ")
 		if err != nil {
 			return err
+		}
+
+		// Check if the user inserted correct length of the password
+		if len(password) < minPasswordLen {
+			return fmt.Errorf("password must be at least %d characters long", minPasswordLen)
 		}
 
 		confirm, err := prompt.ReadPassword("Confirm Password: ")
@@ -34,7 +47,18 @@ var registerCmd = &cobra.Command{
 			return errors.New("passwords do not match")
 		}
 
-		return auth.Register(email, password)
+		// Call Register api function
+		if err := auth.Register(email, password); err != nil {
+			if Verbose {
+				return err
+			}
+			return errors.New("registration failed (use --verbose for details)")
+		}
+
+		fmt.Println("✓ Registration successful")
+
+		return nil
+
 	},
 }
 

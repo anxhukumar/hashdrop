@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// loginCmd represents the login command
+// LoginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Login to your hashdrop account",
@@ -23,7 +23,7 @@ var loginCmd = &cobra.Command{
 			return err
 		}
 
-		return auth.Login(email, password)
+		return nil
 	},
 }
 

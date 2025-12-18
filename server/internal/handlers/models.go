@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Incoming: ser struct to receive from the user
+// Incoming: struct to receive from the user
 type UserIncoming struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

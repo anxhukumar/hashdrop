@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	Verbose bool
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "hashdrop",
 	Short: "Secure file drop with end-to-end encryption",
@@ -27,6 +31,6 @@ func Execute() {
 
 func init() {
 
-	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose output")
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Enable verbose output")
 
 }
