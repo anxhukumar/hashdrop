@@ -10,7 +10,7 @@ import (
 
 func Register(email, password string) error {
 
-	reqBody := NewUser{
+	reqBody := NewUserOutgoing{
 		Email:    email,
 		Password: password,
 	}

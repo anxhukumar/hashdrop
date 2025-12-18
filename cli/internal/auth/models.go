@@ -3,7 +3,7 @@ package auth
 import "time"
 
 // Outgoing: Struct to send new user register data
-type NewUser struct {
+type NewUserOutgoing struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -14,4 +14,16 @@ type NewUserIncoming struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Email     string    `json:"email"`
+}
+
+// Outgoing: Login struct to send while login
+type UserLoginOutgoing struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// Incoming: struct to receive tokens after login
+type UserLoginIncoming struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
