@@ -45,6 +45,7 @@ server/internal/database/
 /bin/
 /dist/
 /build/
+/cli/hashdrop
 
 # Dependency directories
 vendor/
