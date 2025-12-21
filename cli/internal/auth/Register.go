@@ -21,7 +21,7 @@ func Register(email, password string) error {
 	// Post data
 	err := api.PostJSON(config.RegisterEndpoint, reqBody, &respBody)
 	if err != nil {
-		return fmt.Errorf("register failed: %w", err)
+		return fmt.Errorf("register user: %w", err)
 	}
 
 	if respBody.Email == "" {

@@ -11,6 +11,7 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
 
+// PostJSON to the server and receive response
 func PostJSON(endpoint string, reqBody, respBody any) error {
 
 	// Encode out data as json

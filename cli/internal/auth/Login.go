@@ -21,11 +21,16 @@ func Login(email, password string) error {
 	// Post data
 	err := api.PostJSON(config.LoginEndpoint, reqBody, &respBody)
 	if err != nil {
-		return fmt.Errorf("login failed: %w", err)
+		return fmt.Errorf("login: %w", err)
 	}
 
 	if respBody.AccessToken == "" || respBody.RefreshToken == "" {
 		return errors.New("login failed: invalid response")
+	}
+
+	// Store token
+	if err := StoreTokens(respBody); err != nil {
+		return fmt.Errorf("store tokens: %w", err)
 	}
 
 	return nil
