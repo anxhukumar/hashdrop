@@ -66,9 +66,7 @@ func isAccessTokenExpired(token string) bool {
 // Refresh access tokens using refresh tokens
 func refreshAccessToken(refreshToken string) (string, error) {
 
-	reqBody := struct {
-		RefreshToken string `json:"refresh_token"`
-	}{
+	reqBody := RefreshToken{
 		RefreshToken: refreshToken,
 	}
 
