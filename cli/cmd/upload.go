@@ -21,8 +21,8 @@ var uploadCmd = &cobra.Command{
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		filepath := args[0]
-		if filepath == "" {
+		filePath := args[0]
+		if filePath == "" {
 			return errors.New("<file-path> is required")
 		}
 
