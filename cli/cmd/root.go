@@ -31,6 +31,7 @@ func Execute() {
 
 func init() {
 
+	// Verbose flag (long: --verbose, short: -v)
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Enable verbose output")
 
 }

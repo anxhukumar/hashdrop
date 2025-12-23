@@ -6,4 +6,5 @@ const (
 	LoginEndpoint              = "/api/login"
 	RefreshTokenEndpoint       = "/api/refresh"
 	RevokeRefreshTokenEndpoint = "/api/revoke"
+	UploadFileSizeLimit        = 50
 )
