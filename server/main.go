@@ -39,6 +39,10 @@ func main() {
 	mux.HandleFunc("POST /api/login", server.HandlerLogin)
 	mux.HandleFunc("POST /api/refresh", server.HandlerRefreshToken)
 	mux.HandleFunc("POST /api/revoke", server.HandlerRevokeToken)
+	mux.Handle(
+		"POST /api/files/presign",
+		server.Auth(http.HandlerFunc(server.HandlerGeneratePresignLink)),
+	)
 
 	port := cfg.Port
 	serv := &http.Server{

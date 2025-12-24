@@ -39,3 +39,10 @@ type RefreshToken struct {
 type AccessTokenResponse struct {
 	AccessToken string `json:"access_token"`
 }
+
+// Incoming: sent by the client before we generate
+// a presigned S3 POST URL. It carries basic metadata for the upload.
+type FileUploadRequest struct {
+	FileName string `json:"file_name"`
+	MimeType string `json:"mime_type"`
+}
