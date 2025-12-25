@@ -36,7 +36,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decode output and send json to user
+	// Marshal output and send json to user
 	UserOutgoing := UserOutgoing{
 		ID:        userDbResponse.ID,
 		CreatedAt: userDbResponse.CreatedAt,

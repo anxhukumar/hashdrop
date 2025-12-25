@@ -9,12 +9,17 @@ import (
 )
 
 type Config struct {
-	Port               string
-	DbURL              string
-	JWTSecret          string
-	AccessTokenExpiry  time.Duration
-	RefreshTokenExpiry time.Duration
-	Platform           string
+	Port                  string
+	DbURL                 string
+	JWTSecret             string
+	AccessTokenExpiry     time.Duration
+	RefreshTokenExpiry    time.Duration
+	Platform              string
+	S3BucketRegion        string
+	S3PresignedLinkExpiry time.Duration
+	S3MinDataSize         int64
+	S3MaxDataSize         int64
+	S3Bucket              string
 }
 
 // Load environment variables and return a config struct
@@ -33,13 +38,23 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("invalid REFRESH_TOKEN_EXPIRY: %w", err)
 	}
 
+	s3PresignedLinkExpiry, err := time.ParseDuration(getEnv("S3_PRESIGNED_LINK_EXPIRY"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid S3_PRESIGNED_LINK_EXPIRY: %w", err)
+	}
+
 	cfg := &Config{
-		Port:               getEnv("PORT"),
-		DbURL:              getEnv("DB"),
-		JWTSecret:          getEnv("JWT_SECRET"),
-		AccessTokenExpiry:  accessTokenExpiry,
-		RefreshTokenExpiry: refreshTokenExpiry,
-		Platform:           getEnv("PLATFORM"),
+		Port:                  getEnv("PORT"),
+		DbURL:                 getEnv("DB"),
+		JWTSecret:             getEnv("JWT_SECRET"),
+		AccessTokenExpiry:     accessTokenExpiry,
+		RefreshTokenExpiry:    refreshTokenExpiry,
+		Platform:              getEnv("PLATFORM"),
+		S3BucketRegion:        getEnv("S3_BUCKET_REGION"),
+		S3PresignedLinkExpiry: s3PresignedLinkExpiry,
+		S3MinDataSize:         int64(1_024),      // 1 KB minimum
+		S3MaxDataSize:         int64(52_428_800), // 50 MB maximum
+		S3Bucket:              getEnv("S3_BUCKET"),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -54,10 +69,12 @@ func (c *Config) Validate() error {
 
 	// Maps to each port value for error messages
 	checks := map[string]string{
-		"PORT":       c.Port,
-		"DB":         c.DbURL,
-		"JWT_SECRET": c.JWTSecret,
-		"PLATFORM":   c.Platform,
+		"PORT":             c.Port,
+		"DB":               c.DbURL,
+		"JWT_SECRET":       c.JWTSecret,
+		"PLATFORM":         c.Platform,
+		"S3_BUCKET_REGION": c.S3BucketRegion,
+		"S3_BUCKET":        c.S3Bucket,
 	}
 
 	for name, value := range checks {
@@ -72,6 +89,17 @@ func (c *Config) Validate() error {
 	}
 	if c.RefreshTokenExpiry <= 0 {
 		return fmt.Errorf("REFRESH_TOKEN_EXPIRY must be positive")
+	}
+	if c.S3PresignedLinkExpiry <= 0 {
+		return fmt.Errorf("S3_PRESIGNED_LINK_EXPIRY must be positive")
+	}
+
+	// Validate S3 byte limits
+	if c.S3MinDataSize < 0 {
+		return fmt.Errorf("S3_MIN_DATA_SIZE cannot be negative")
+	}
+	if c.S3MaxDataSize <= 0 {
+		return fmt.Errorf("S3_MAX_DATA_SIZE must be positive")
 	}
 
 	return nil

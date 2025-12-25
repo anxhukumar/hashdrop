@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
 
+	"github.com/anxhukumar/hashdrop/server/internal/aws"
 	"github.com/anxhukumar/hashdrop/server/internal/config"
 	"github.com/anxhukumar/hashdrop/server/internal/handlers"
 	"github.com/anxhukumar/hashdrop/server/internal/store"
@@ -16,7 +18,13 @@ func main() {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		log.Fatalf("Failed to load configuration: %s", err)
+	}
+
+	// Initialize S3
+	s3Config, s3Client, err := aws.InitS3(context.Background(), cfg.S3BucketRegion)
+	if err != nil {
+		log.Fatalf("Failed to initialize s3: %s", err)
 	}
 
 	// Configure database connection
@@ -28,8 +36,8 @@ func main() {
 
 	// Create store struct instance
 	store := store.NewStore(dbConn)
-	// Provide the store and config to the server
-	server := handlers.NewServer(store, cfg)
+	// Provide the store, config and s3 dependencies
+	server := handlers.NewServer(store, cfg, s3Config, s3Client)
 
 	mux := http.NewServeMux()
 

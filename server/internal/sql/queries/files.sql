@@ -6,7 +6,7 @@ VALUES (
     ?,
     ?,
     ?,
-    ?,
-    ?
+    datetime('now'),
+    datetime('now')
 )
 RETURNING *;

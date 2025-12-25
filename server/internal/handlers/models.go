@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"time"
+
+	"github.com/anxhukumar/hashdrop/server/internal/aws"
+	"github.com/google/uuid"
 )
 
 // Incoming: struct to receive from the user
@@ -45,4 +48,10 @@ type AccessTokenResponse struct {
 type FileUploadRequest struct {
 	FileName string `json:"file_name"`
 	MimeType string `json:"mime_type"`
+}
+
+// Outgoing: presigned url response to the client
+type PresignResponse struct {
+	FileID         uuid.UUID          `json:"file_id"`
+	UploadResource aws.S3PostResponse `json:"upload_resource"`
 }
