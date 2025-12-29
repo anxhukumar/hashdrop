@@ -12,13 +12,14 @@ import (
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
+	"github.com/anxhukumar/hashdrop/cli/internal/ui"
 	"github.com/anxhukumar/hashdrop/cli/internal/upload"
 	"github.com/spf13/cobra"
 )
 
 var (
-	key  string
-	name string
+	noVault bool
+	name    string
 )
 
 // uploadCmd represents the upload command
@@ -87,43 +88,41 @@ var uploadCmd = &cobra.Command{
 			}
 		}
 
-		// Prompt the user and ask for encryption key if they didn't add or is invalid
-		if strings.TrimSpace(key) == "" || len(key) < config.MinEncryptionKeyLen {
+		// No vault mode
+		var passphrase string
+		if noVault {
 
-			// Check if user is here only for the key length
-			if len(key) > 0 {
-				fmt.Printf("key must be at least %d characters long\n", config.MinEncryptionKeyLen)
-			}
-
+			ui.PrintNoVaultWarning()
+			fmt.Scanln() // waits until Enter is pressed to continue
 			for {
 
-				k, err := prompt.ReadPassword("Enter encryption key: ")
+				pass, err := prompt.ReadPassword("Enter passphrase: ")
 				if err != nil {
 					return err
 				}
-				key = k
 
-				if strings.TrimSpace(key) == "" {
-					fmt.Println("key cannot be empty or whitespace")
+				if strings.TrimSpace(pass) == "" {
+					fmt.Println("passphrase cannot be empty or whitespace")
 					continue
 				}
 
 				// Check if the key length is valid
-				if len(key) < config.MinEncryptionKeyLen {
-					fmt.Printf("key must be at least %d characters long\n", config.MinEncryptionKeyLen)
+				if len(pass) < config.MinCustomEncryptionKeyLen {
+					fmt.Printf("passphrase must be at least %d characters long\n", config.MinCustomEncryptionKeyLen)
 					continue
 				}
 
-				confirmKey, err := prompt.ReadPassword("Confirm key: ")
+				confirmPass, err := prompt.ReadPassword("Confirm: ")
 				if err != nil {
 					return err
 				}
 
-				if key != confirmKey {
-					fmt.Println("keys do not match, try again")
+				if pass != confirmPass {
+					fmt.Println("passphrase do not match, try again")
 					continue
 				}
 
+				passphrase = pass
 				break
 			}
 
@@ -180,7 +179,7 @@ var uploadCmd = &cobra.Command{
 
 func init() {
 	// Key flag (long: --key, short: -k)
-	uploadCmd.Flags().StringVarP(&key, "key", "k", "", "Encryption key / passphrase")
+	uploadCmd.Flags().BoolVarP(&noVault, "no-vault", "N", false, "Disable local key vault. Use a self-managed encryption passphrase. If lost, the file cannot be decrypted.")
 	// Name flag (long: --name, short: -n)
 	uploadCmd.Flags().StringVarP(&name, "name", "n", "", "Optional name for the file")
 
