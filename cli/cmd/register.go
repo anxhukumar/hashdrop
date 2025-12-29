@@ -8,11 +8,10 @@ import (
 	"fmt"
 
 	"github.com/anxhukumar/hashdrop/cli/internal/auth"
+	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
 	"github.com/spf13/cobra"
 )
-
-const minPasswordLen = 8
 
 // RegisterCmd represents the register command
 var registerCmd = &cobra.Command{
@@ -26,7 +25,7 @@ var registerCmd = &cobra.Command{
 		}
 
 		fmt.Println("\nPassword requirements:")
-		fmt.Printf("• Minimum length: %d characters\n\n", minPasswordLen)
+		fmt.Printf("• Minimum length: %d characters\n\n", config.MinPasswordLen)
 
 		password, err := prompt.ReadPassword("Password: ")
 		if err != nil {
@@ -34,8 +33,8 @@ var registerCmd = &cobra.Command{
 		}
 
 		// Check if the user inserted correct length of the password
-		if len(password) < minPasswordLen {
-			return fmt.Errorf("password must be at least %d characters long", minPasswordLen)
+		if len(password) < config.MinPasswordLen {
+			return fmt.Errorf("password must be at least %d characters long", config.MinPasswordLen)
 		}
 
 		confirm, err := prompt.ReadPassword("Confirm Password: ")
