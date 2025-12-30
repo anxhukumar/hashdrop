@@ -6,11 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-)
 
-const (
-	ConfigDirName  = ".hashdrop"   // name of the tokens directory
-	TokensFileName = "tokens.json" // name of the tokens file
+	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
 
 // Get tokens path
@@ -19,7 +16,7 @@ func tokensPath() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get home directory: %w", err)
 	}
-	return filepath.Join(homeDir, ConfigDirName, TokensFileName), nil
+	return filepath.Join(homeDir, config.ConfigDirName, config.TokensFileName), nil
 }
 
 // Stores the tokens in the users home directory ~/.hashdrop/tokens.json

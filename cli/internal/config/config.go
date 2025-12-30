@@ -1,6 +1,10 @@
 package config
 
 const (
+	ConfigDirName  = ".hashdrop"   // name of the tokens directory
+	TokensFileName = "tokens.json" // name of the tokens file
+	VaultFileName  = "vault.enc"   // name of the vault file
+
 	MinPasswordLen            = 8
 	MinCustomEncryptionKeyLen = 12
 	UploadFileSizeLimit       = 50
