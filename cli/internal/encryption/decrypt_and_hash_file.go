@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
@@ -35,9 +36,6 @@ func DecryptAndHashStreaming(src io.Reader, dst io.Writer, dek []byte) ([]byte, 
 		return nil, errors.New("invalid nonce size")
 	}
 
-	const chunksize = 64 * 1024
-	cipherBuf := make([]byte, chunksize+gcm.Overhead())
-
 	if dst == nil {
 		dst = io.Discard
 	}
@@ -45,7 +43,7 @@ func DecryptAndHashStreaming(src io.Reader, dst io.Writer, dek []byte) ([]byte, 
 	hasher := sha256.New()
 
 	for {
-		// nonce
+		// Read nonce
 		nonce := make([]byte, nonceSize)
 		_, err := io.ReadFull(src, nonce)
 		if err == io.EOF {
@@ -55,16 +53,27 @@ func DecryptAndHashStreaming(src io.Reader, dst io.Writer, dek []byte) ([]byte, 
 			return nil, fmt.Errorf("failed reading nonce: %w", err)
 		}
 
-		// ciphertext
-		n, err := io.ReadFull(src, cipherBuf)
-		if err != nil && err != io.ErrUnexpectedEOF {
-			return nil, fmt.Errorf("failed reading ciphertext: %w", err)
-		}
-		if n == 0 {
-			return nil, errors.New("unexpected empty ciphertext chunk")
+		// Read ciphertext length
+		lenBuf := make([]byte, 4)
+		if _, err := io.ReadFull(src, lenBuf); err != nil {
+			return nil, fmt.Errorf("failed reading ciphertext length: %w", err)
 		}
 
-		cipherChunk := cipherBuf[:n]
+		chunkLen := binary.BigEndian.Uint32(lenBuf)
+		if chunkLen == 0 {
+			return nil, errors.New("invalid ciphertext length")
+		}
+
+		const maxChunk = 64*1024 + 16
+		if chunkLen > maxChunk {
+			return nil, fmt.Errorf("ciphertext chunk too large: %d", chunkLen)
+		}
+
+		// Read ciphertext
+		cipherChunk := make([]byte, chunkLen)
+		if _, err := io.ReadFull(src, cipherChunk); err != nil {
+			return nil, fmt.Errorf("failed reading ciphertext chunk: %w", err)
+		}
 
 		// decrypt (AES-GCM also check integrity)
 		plain, err := gcm.Open(nil, nonce, cipherChunk, nil)
@@ -82,9 +91,6 @@ func DecryptAndHashStreaming(src io.Reader, dst io.Writer, dek []byte) ([]byte, 
 			return nil, fmt.Errorf("failed writing plaintext: %w", err)
 		}
 
-		if err == io.ErrUnexpectedEOF {
-			break
-		}
 	}
 
 	return hasher.Sum(nil), nil
