@@ -7,6 +7,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+
+	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
 
 // Encrypt file in chunks. [ nonce ][ 4-byte length ][ ciphertext+tag ]
@@ -26,7 +28,7 @@ func EncryptFileStreaming(src io.Reader, dst io.Writer, dek []byte) error {
 		return err
 	}
 
-	buf := make([]byte, 64*1024) // 64KB chunks
+	buf := make([]byte, config.FileStreamingChunkSize)
 
 	for {
 		n, readErr := src.Read(buf)

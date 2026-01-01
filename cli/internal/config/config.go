@@ -11,7 +11,8 @@ const (
 	MinCustomEncryptionKeyLen  = 12
 	MinVaultPasswordLen        = 12
 	UploadFileSizeLimit        = 50
-	MaxTimeAllowedToUploadFile = 30 // minutes
+	MaxTimeAllowedToUploadFile = 30        // minutes
+	FileStreamingChunkSize     = 64 * 1024 // 64KB
 
 	// API
 	BaseURL                    = "http://localhost:8080"

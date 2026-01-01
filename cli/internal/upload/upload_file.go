@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"net/http"
 	"os"
 
+	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 )
 
@@ -26,44 +26,38 @@ func UploadFileToS3(
 	defer f.Close()
 
 	pr, pw := io.Pipe()
-	mw := multipart.NewWriter(pw)
 
-	// Streaming multipart data so that http could listen simultaneously and send it
+	// Streaming data so that http could listen simultaneously and send it
 	go func() {
 		defer pw.Close()
 
-		// Write AWS required form fields
-		for k, v := range presign.UploadResource.Fields {
-			if err := mw.WriteField(k, v); err != nil {
-				pw.CloseWithError(err)
-				return
-			}
-		}
-
-		// The field name must be "file" for s3 by convention
-		filePart, err := mw.CreateFormFile("file", "encrypted.bin")
-		if err != nil {
+		// Encrypt and stream data to destination
+		if err := encryption.EncryptFileStreaming(f, pw, dek); err != nil {
 			pw.CloseWithError(err)
-			return
-		}
-
-		// Encrypt and stream data here to filePart destination
-		if err := encryption.EncryptFileStreaming(f, filePart, dek); err != nil {
-			pw.CloseWithError(err)
-			return
-		}
-
-		// Finish multipart
-		if err := mw.Close(); err != nil {
-			pw.CloseWithError(err)
-			return
 		}
 	}()
+
+	// Calculate total size
+	info, err := os.Stat(localFilePath)
+	if err != nil {
+		return err
+	}
+
+	plainSize := info.Size()
+
+	const chunkSize = config.FileStreamingChunkSize
+	nonceSize := 12
+	gcmTag := 16
+	lenField := 4
+
+	numChunks := (plainSize + chunkSize - 1) / chunkSize
+	overheadPerChunk := int64(nonceSize + lenField + gcmTag)
+	encryptedSize := plainSize + numChunks*overheadPerChunk
 
 	// Send http request while taking data from the stream
 	req, err := http.NewRequestWithContext(
 		ctx,
-		http.MethodPost,
+		http.MethodPut,
 		presign.UploadResource.URL,
 		pr,
 	)
@@ -71,7 +65,9 @@ func UploadFileToS3(
 		return err
 	}
 
-	req.Header.Set("Content-Type", mw.FormDataContentType())
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	req.ContentLength = encryptedSize
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -79,7 +75,7 @@ func UploadFileToS3(
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("upload failed: %s | %s", resp.Status, string(body))
 	}
