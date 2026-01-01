@@ -19,7 +19,7 @@ CREATE TABLE files (
     encryption_chunk_kb INTEGER NOT NULL DEFAULT 64,
 
     -- vault metadata
-    key_management_mode TEXT NOT NULL
+    key_management_mode TEXT
         CHECK (key_management_mode IN ('vault','passphrase')),
     passphrase_salt TEXT,
 
