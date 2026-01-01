@@ -14,7 +14,7 @@ import (
 
 // -Decrypts streaming
 // -Always computes SHA-256 of plaintext
-// -Optionally writes plaintext (if dsa != nil)
+// -Optionally writes plaintext (if dst != nil)
 // Returns computed hash bytes
 func DecryptAndHashStreaming(src io.Reader, dst io.Writer, dek []byte) ([]byte, error) {
 	if len(dek) != config.ArgonKeyLen {

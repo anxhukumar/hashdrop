@@ -19,7 +19,7 @@ var rootCmd = &cobra.Command{
 	Long: `Hashdrop is a zero-trust CLI tool for sharing sensitive files.
 
 Files are encrypted client-side, stored as unreadable blobs,
-and shared via expiring links with integrity verification.`,
+and shared via links with integrity verification.`,
 }
 
 func Execute() {
