@@ -1,20 +1,32 @@
 package config
 
 const (
-	ConfigDirName         = ".hashdrop"       // name of the tokens directory
-	TokensFileName        = "tokens.json"     // name of the tokens file
-	VaultFileName         = "vault.enc"       // name of the vault file
-	VaultMetadataFileName = "vault_meta.json" // name of the vault file
-	VaultVersion          = 1
+	// ================================
+	// App & Storage Paths
+	// ================================
+	ConfigDirName         = ".hashdrop"       // directory under user home
+	TokensFileName        = "tokens.json"     // authentication tokens file
+	VaultFileName         = "vault.enc"       // encrypted vault file
+	VaultMetadataFileName = "vault_meta.json" // vault metadata (argon params, salt, etc.)
+	VaultVersion          = 1                 // vault schema version
 
-	MinPasswordLen             = 8
-	MinCustomEncryptionKeyLen  = 12
-	MinVaultPasswordLen        = 12
-	UploadFileSizeLimit        = 50
-	MaxTimeAllowedToUploadFile = 30        // minutes
-	FileStreamingChunkSize     = 64 * 1024 // 64KB
+	// ================================
+	// Security / Password Policy
+	// ================================
+	MinPasswordLen            = 8  // account password minimum
+	MinCustomEncryptionKeyLen = 12 // no-vault passphrase minimum
+	MinVaultPasswordLen       = 12 // vault password minimum
 
-	// API
+	// ================================
+	// Upload & File Limits
+	// ================================
+	UploadFileSizeLimit        = 50        // max upload file size (MB)
+	MaxTimeAllowedToUploadFile = 30        // max upload time (minutes)
+	FileStreamingChunkSize     = 64 * 1024 // streaming chunk size (64KB)
+
+	// ================================
+	// API Configuration
+	// ================================
 	BaseURL                    = "http://localhost:8080"
 	RegisterEndpoint           = "/api/register"
 	LoginEndpoint              = "/api/login"
@@ -22,10 +34,14 @@ const (
 	RevokeRefreshTokenEndpoint = "/api/revoke"
 	GetPresignedLinkEndpoint   = "/api/files/presign"
 
-	// argon2 params for Data encryption key generation
-	// in case of no-vault user and Vault Master key generation
-	ArgonTime    = 3
-	ArgonMemory  = 64 * 1024
-	ArgonThreads = 1
-	ArgonKeyLen  = 32
+	// ================================
+	// Cryptography — Argon2 Parameters
+	// Used for:
+	//  - Vault Master Key derivation
+	//  - No-vault file passphrase key derivation
+	// ================================
+	ArgonTime    = 3         // iterations
+	ArgonMemory  = 64 * 1024 // memory cost (KB) → 64MB
+	ArgonThreads = 1         // parallelism
+	ArgonKeyLen  = 32        // derived key length (bytes)
 )

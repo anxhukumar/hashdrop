@@ -152,7 +152,7 @@ var uploadCmd = &cobra.Command{
 				if Verbose {
 					return fmt.Errorf("generate random key: %w", err)
 				}
-				return errors.New("error generating random key")
+				return errors.New("error generating random key (use --verbose for details)")
 			}
 		}
 
@@ -187,17 +187,17 @@ var uploadCmd = &cobra.Command{
 			if Verbose {
 				return fmt.Errorf("vault exists : %w", err)
 			}
-			return errors.New("can't check if vault exists")
+			return errors.New("can't check if vault exists (use --verbose for details)")
 		}
 
-		// If user chooses vault mode - If vault does not exist create it.
-		// If it exists update the vault with new (fileID -> fileDEK)
+		// If user chooses vault mode and vault does not exist then create it.
+		// If it exists update the vault with new (fileID -> fileDEK).
 		if !noVault {
 			if !exists {
+				ui.PrintVaultCreationInfo()
+				fmt.Scanln() // waits until Enter is pressed to continue
 				var vaultMasterKey []byte
 				var vaultData encryption.Vault
-				// TODO: DISPLAY MSG TO SHOW WHAT IS VAULT KEY ETC!!
-				// MAYBE ENTER TO CONTINUE
 				for {
 
 					pass, err := prompt.ReadPassword("Enter vault password: ")
@@ -320,12 +320,6 @@ var uploadCmd = &cobra.Command{
 			}
 			return errors.New("error while uploading file (use --verbose for details)")
 		}
-
-		// testing nonsense
-		fmt.Println("YOU DID IT!!!")
-		fmt.Println(fileSalt)
-		fmt.Println(fileHash)
-		return nil
 
 		// once the data is uploaded successfully send teh full metadata to backend for storage
 

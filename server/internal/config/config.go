@@ -17,7 +17,6 @@ type Config struct {
 	Platform              string
 	S3BucketRegion        string
 	S3PresignedLinkExpiry time.Duration
-	S3MinDataSize         int64
 	S3MaxDataSize         int64
 	S3Bucket              string
 }
@@ -52,7 +51,6 @@ func LoadConfig() (*Config, error) {
 		Platform:              getEnv("PLATFORM"),
 		S3BucketRegion:        getEnv("S3_BUCKET_REGION"),
 		S3PresignedLinkExpiry: s3PresignedLinkExpiry,
-		S3MinDataSize:         int64(1_024),      // 1 KB minimum
 		S3MaxDataSize:         int64(52_428_800), // 50 MB maximum
 		S3Bucket:              getEnv("S3_BUCKET"),
 	}
@@ -95,9 +93,6 @@ func (c *Config) Validate() error {
 	}
 
 	// Validate S3 byte limits
-	if c.S3MinDataSize < 0 {
-		return fmt.Errorf("S3_MIN_DATA_SIZE cannot be negative")
-	}
 	if c.S3MaxDataSize <= 0 {
 		return fmt.Errorf("S3_MAX_DATA_SIZE must be positive")
 	}

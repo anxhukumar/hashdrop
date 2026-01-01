@@ -52,6 +52,6 @@ type FileUploadRequest struct {
 
 // Outgoing: presigned url response to the client
 type PresignResponse struct {
-	FileID         uuid.UUID          `json:"file_id"`
-	UploadResource aws.S3PostResponse `json:"upload_resource"`
+	FileID         uuid.UUID         `json:"file_id"`
+	UploadResource aws.S3PutResponse `json:"upload_resource"`
 }

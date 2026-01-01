@@ -34,18 +34,15 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	s3ObjectKey := fmt.Sprintf("user-%s/%s", userID.String(), fileID.String())
 
 	// Generate presigned link with aws s3
-	presignedLinkResponse, err := aws.GeneratePresignedPOST(
+	presignedLinkResponse, err := aws.GeneratePresignedPUT(
 		r.Context(),
-		s.s3Config,
-		s.cfg.S3MinDataSize,
-		s.cfg.S3MaxDataSize,
+		s.s3Client,
 		s.cfg.S3PresignedLinkExpiry,
 		s.cfg.S3Bucket,
 		s3ObjectKey,
-		s.cfg.S3BucketRegion,
 	)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error generating presigned post link", err, http.StatusInternalServerError)
+		RespondWithError(w, s.logger, "Error generating presigned put link", err, http.StatusInternalServerError)
 		return
 	}
 

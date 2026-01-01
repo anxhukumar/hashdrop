@@ -15,6 +15,7 @@ In this mode:
 • The passphrase is never stored by HashDrop or backed up anywhere
 • Without your passphrase, your files cannot be decrypted
 • Loss of the passphrase results in permanent and irreversible data loss
+• Your passphrase must be at least 12 characters long
 
 This option is intended for users who explicitly want to self-manage encryption secrets.
 
