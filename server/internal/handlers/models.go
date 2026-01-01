@@ -62,10 +62,9 @@ type FileUploadMetadata struct {
 	PlaintextHash      string    `json:"plaintext_hash"`
 	PlaintextSizeBytes int64     `json:"plaintext_size_bytes"`
 	PassphraseSalt     string    `json:"passphrase_salt"`
-	Status             string    `json:"status"`
 }
 
 // Outgoing: Send status if file upload is successfull
 type FileUploadStatus struct {
-	Successful bool `json:"status"`
+	Successful bool `json:"successful"`
 }

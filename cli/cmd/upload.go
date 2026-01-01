@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"os"
@@ -40,7 +41,8 @@ var uploadCmd = &cobra.Command{
 		filePath := args[0]
 
 		// Validate file size
-		if err := upload.ValidateFileSize(filePath, Verbose); err != nil {
+		fileSize, err := upload.ValidateFileSize(filePath, Verbose)
+		if err != nil {
 			return err
 		}
 
@@ -81,11 +83,6 @@ var uploadCmd = &cobra.Command{
 			return errors.New("error getting presigned link (use --verbose for details)")
 		}
 
-		// Check if vault exists, create if it doesn't and update it
-		if err = encryption.CreateAndUpdateVault(fileDEK, presignResource.FileID, noVault, Verbose); err != nil {
-			return err
-		}
-
 		// Encrypt and upload file (streaming)
 
 		// Cancel if user presses ctrl+C
@@ -108,10 +105,40 @@ var uploadCmd = &cobra.Command{
 			return errors.New("error while uploading file (use --verbose for details)")
 		}
 
-		// once the data is uploaded successfully send teh full metadata to backend for storage
+		// Send file meta data to server to complete upload
+		var fileSaltStr string
 
+		if fileSalt == nil {
+			fileSaltStr = ""
+		} else {
+			fileSaltStr = base64.StdEncoding.EncodeToString(fileSalt)
+		}
+
+		uploadFileMetadata := upload.FileUploadMetadata{
+			FileID:             presignResource.FileID,
+			PlaintextHash:      fileHash,
+			PlaintextSizeBytes: fileSize,
+			PassphraseSalt:     fileSaltStr,
+		}
+		if err := upload.CompleteFileUpload(uploadFileMetadata); err != nil {
+
+			if Verbose {
+				return fmt.Errorf("complete file upload: %w", err)
+			}
+			return errors.New("error while completing file upload (use --verbose for details)")
+		}
+
+		// Only do this if chosen no-vault mode
+		if !noVault {
+			// Check if vault exists, create if it doesn't and update it
+			if err = encryption.CreateAndUpdateVault(fileDEK, presignResource.FileID, Verbose); err != nil {
+				return err
+			}
+		}
+
+		fmt.Println("Upload completed successfully 🎉")
 		// get cloudfront url at the end in response to download encrypted data
-
+		return nil
 	},
 }
 
