@@ -51,6 +51,10 @@ func main() {
 		"POST /api/files/presign",
 		server.Auth(http.HandlerFunc(server.HandlerGeneratePresignLink)),
 	)
+	mux.Handle(
+		"POST /api/files/complete",
+		server.Auth(http.HandlerFunc(server.HandlerCompleteFileUpload)),
+	)
 
 	port := cfg.Port
 	serv := &http.Server{

@@ -54,7 +54,7 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		MimeType: sql.NullString{String: FileMetadata.MimeType, Valid: true},
 		S3Key:    s3ObjectKey,
 	}
-	_, err = s.store.Queries.CreatePendingFile(r.Context(), fileData)
+	err = s.store.Queries.CreatePendingFile(r.Context(), fileData)
 	if err != nil {
 		RespondWithError(w, s.logger, "Error creating file meta data", err, http.StatusInternalServerError)
 		return

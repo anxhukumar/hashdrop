@@ -55,3 +55,17 @@ type PresignResponse struct {
 	FileID         uuid.UUID         `json:"file_id"`
 	UploadResource aws.S3PutResponse `json:"upload_resource"`
 }
+
+// Incoming: send by the client after successful file upload
+type FileUploadMetadata struct {
+	FileID             uuid.UUID `json:"file_id"`
+	PlaintextHash      string    `json:"plaintext_hash"`
+	PlaintextSizeBytes int64     `json:"plaintext_size_bytes"`
+	PassphraseSalt     string    `json:"passphrase_salt"`
+	Status             string    `json:"status"`
+}
+
+// Outgoing: Send status if file upload is successfull
+type FileUploadStatus struct {
+	Successful bool `json:"status"`
+}
