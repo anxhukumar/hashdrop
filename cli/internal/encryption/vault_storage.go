@@ -68,14 +68,17 @@ func LoadVault(vaultMasterKey []byte) (Vault, error) {
 	encData, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return vaultData, errors.New("vault not found")
+			return vaultData, ErrVaultNotFound
 		}
 		return vaultData, fmt.Errorf("failed to read vault file: %w", err)
 	}
 
-	// Decrypt vault data: PENDING
+	// Decrypt vault data
 	decData, err := DecryptVault(encData, vaultMasterKey)
 	if err != nil {
+		if errors.Is(err, ErrInvalidVaultKeyOrCorrupted) {
+			return vaultData, ErrInvalidVaultKeyOrCorrupted
+		}
 		return vaultData, fmt.Errorf("decrypt vault: %w", err)
 	}
 
@@ -98,4 +101,23 @@ func DeleteVault() error {
 		return fmt.Errorf("failed to remove vault file: %w", err)
 	}
 	return nil
+}
+
+// Check if vault exists
+func VaultExists() (bool, error) {
+	path, err := vaultPath()
+	if err != nil {
+		return false, err
+	}
+
+	_, err = os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("failed to stat vault: %w", err)
 }

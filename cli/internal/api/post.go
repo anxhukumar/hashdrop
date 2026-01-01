@@ -12,7 +12,7 @@ import (
 )
 
 // PostJSON to the server and receive response
-func PostJSON(endpoint string, reqBody, respBody any) error {
+func PostJSON(endpoint string, reqBody, respBody any, token string) error {
 
 	// Encode out data as json
 	jsonData, err := json.Marshal(reqBody)
@@ -29,6 +29,11 @@ func PostJSON(endpoint string, reqBody, respBody any) error {
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
+
+	// Set authorization header if token is provided
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 
 	// Create a new client and make the request
 	client := &http.Client{

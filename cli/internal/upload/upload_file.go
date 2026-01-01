@@ -11,6 +11,7 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 )
 
+// Encrypts and uploads file on the fly
 func UploadFileToS3(
 	ctx context.Context,
 	presign PresignResponse,

@@ -21,7 +21,7 @@ func RevokeRefreshToken() error {
 	}
 
 	// Post data
-	err = api.PostJSON(config.RevokeRefreshTokenEndpoint, reqBody, nil)
+	err = api.PostJSON(config.RevokeRefreshTokenEndpoint, reqBody, nil, "")
 	if err != nil {
 		return fmt.Errorf("revoke refresh token: %w", err)
 	}

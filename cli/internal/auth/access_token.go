@@ -76,7 +76,7 @@ func refreshAccessToken(refreshToken string) (string, error) {
 	}{}
 
 	// Post data
-	err := api.PostJSON(config.RefreshTokenEndpoint, reqBody, &respBody)
+	err := api.PostJSON(config.RefreshTokenEndpoint, reqBody, &respBody, "")
 	if err != nil {
 		return "", fmt.Errorf("refresh access token: %w", err)
 	}

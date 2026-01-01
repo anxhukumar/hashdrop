@@ -19,7 +19,7 @@ func Login(email, password string) error {
 	respBody := UserLoginIncoming{}
 
 	// Post data
-	err := api.PostJSON(config.LoginEndpoint, reqBody, &respBody)
+	err := api.PostJSON(config.LoginEndpoint, reqBody, &respBody, "")
 	if err != nil {
 		return fmt.Errorf("login: %w", err)
 	}

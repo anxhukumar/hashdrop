@@ -4,8 +4,14 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"io"
+)
+
+var (
+	ErrInvalidVaultKeyOrCorrupted = errors.New("Failed to unlock vault. The password may be incorrect or the vault file may be corrupted.")
+	ErrVaultNotFound              = errors.New("vault not found")
 )
 
 // Encrypt vault data using AES-GCM standard
@@ -61,7 +67,8 @@ func DecryptVault(encData []byte, vaultMasterKey []byte) ([]byte, error) {
 	// GCM Verifies integrity + password correctness here
 	plain, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return nil, fmt.Errorf("decrypt vault: %w", err)
+		// Authentication failed -> wrong key or tampered vault
+		return nil, ErrInvalidVaultKeyOrCorrupted
 	}
 
 	return plain, nil

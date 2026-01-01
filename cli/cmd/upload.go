@@ -4,13 +4,20 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
+	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
 	"github.com/anxhukumar/hashdrop/cli/internal/ui"
 	"github.com/anxhukumar/hashdrop/cli/internal/upload"
@@ -18,8 +25,8 @@ import (
 )
 
 var (
-	noVault bool
-	name    string
+	noVault  bool
+	fileName string
 )
 
 // uploadCmd represents the upload command
@@ -39,6 +46,7 @@ var uploadCmd = &cobra.Command{
 			return err
 		}
 
+		// Concurrently handle hash and mime generation
 		var wg sync.WaitGroup
 
 		errChPhase1 := make(chan error, 2)
@@ -88,8 +96,11 @@ var uploadCmd = &cobra.Command{
 			}
 		}
 
-		// No vault mode
-		var passphrase string
+		// File encryption key and salt
+		var fileDEK []byte  // no-vault + vault
+		var fileSalt []byte // only for no-vault users
+
+		// Create DEK with and without vault
 		if noVault {
 
 			ui.PrintNoVaultWarning()
@@ -122,54 +133,200 @@ var uploadCmd = &cobra.Command{
 					continue
 				}
 
-				passphrase = pass
+				fileDEK, fileSalt, err = encryption.GenerateDEKfromPassphrase(pass)
+				if err != nil {
+					if Verbose {
+						return fmt.Errorf("generate key from passphrase: %w", err)
+					}
+					return errors.New("error generating key from passphrase (use --verbose for details)")
+				}
+
 				break
 			}
 
+		} else {
+			var err error
+
+			fileDEK, err = encryption.GenerateRandomDEK()
+			if err != nil {
+				if Verbose {
+					return fmt.Errorf("generate random key: %w", err)
+				}
+				return errors.New("error generating random key")
+			}
 		}
 
 		// Prompt the user and show the default file name to user if they didn't use the flag
 		// They can edit it here if they want
-		if name == "" {
+		if fileName == "" {
 			defaultFileName := filepath.Base(filePath)
 			n, err := prompt.ReadLine(fmt.Sprintf("File name (press Enter to keep %q): ", defaultFileName))
 			if err != nil {
 				return err
 			}
 			if n == "" {
-				name = defaultFileName
+				fileName = defaultFileName
 			} else {
-				name = n
+				fileName = n
 			}
-
 		}
-
-		errChPhase2 := make(chan error, 2)
-
-		wg.Add(2)
 
 		// Send mime type and file name and get presign link
 		var presignResource upload.PresignResponse
-		go func() {
-			defer wg.Done()
-			err := upload.GetPresignedLink(name, mimeType, &presignResource)
-			if err != nil {
-				if Verbose {
-					errChPhase2 <- err
-					return
-				}
-				errChPhase2 <- errors.New("error getting upload link from server (use --verbose for details)")
-				return
+
+		if err := upload.GetPresignedLink(fileName, mimeType, &presignResource); err != nil {
+			if Verbose {
+				return err
 			}
+			return errors.New("error getting presigned link (use --verbose for details)")
+		}
 
-		}()
+		// Check if vault exists
+		exists, err := encryption.VaultExists()
+		if err != nil {
+			if Verbose {
+				return fmt.Errorf("vault exists : %w", err)
+			}
+			return errors.New("can't check if vault exists")
+		}
 
-		// Encrypt data
+		// If user chooses vault mode - If vault does not exist create it.
+		// If it exists update the vault with new (fileID -> fileDEK)
+		if !noVault {
+			if !exists {
+				var vaultMasterKey []byte
+				var vaultData encryption.Vault
+				// TODO: DISPLAY MSG TO SHOW WHAT IS VAULT KEY ETC!!
+				// MAYBE ENTER TO CONTINUE
+				for {
 
-		// wait here
+					pass, err := prompt.ReadPassword("Enter vault password: ")
+					if err != nil {
+						return err
+					}
 
-		// prmpt the user to keep the key safe
-		// Upload the encrypted data
+					if strings.TrimSpace(pass) == "" {
+						fmt.Println("vault password cannot be empty or whitespace")
+						continue
+					}
+
+					// Check if the key length is valid
+					if len(pass) < config.MinVaultPasswordLen {
+						fmt.Printf("vault password must be at least %d characters long\n", config.MinVaultPasswordLen)
+						continue
+					}
+
+					confirmPass, err := prompt.ReadPassword("Confirm: ")
+					if err != nil {
+						return err
+					}
+
+					if pass != confirmPass {
+						fmt.Println("passwords do not match, try again")
+						continue
+					}
+
+					vaultMasterKey, err = encryption.GenerateVaultMasterKey(pass)
+					if err != nil {
+						if Verbose {
+							return fmt.Errorf("generate vault key: %w", err)
+						}
+						return errors.New("error generating vault master key (use --verbose for details)")
+					}
+
+					// Create vault data and store it (fileID -> FileDEK)
+					vaultData = encryption.Vault{
+						Version: config.VaultVersion,
+						Entries: make(map[string]string),
+					}
+
+					vaultData.Entries[presignResource.FileID.String()] = base64.StdEncoding.EncodeToString(fileDEK)
+
+					if err = encryption.EncryptAndStoreVault(vaultData, vaultMasterKey); err != nil {
+						if Verbose {
+							return fmt.Errorf("creating vault: %w", err)
+						}
+						return errors.New("error while creating vault (use --verbose for details)")
+					}
+
+					break
+				}
+			} else {
+				var vaultMasterKey []byte
+				var vaultData encryption.Vault
+
+				for {
+					// Derive vault master key
+					pass, err := prompt.ReadPassword("Enter vault password: ")
+					if err != nil {
+						return err
+					}
+
+					if strings.TrimSpace(pass) == "" {
+						fmt.Println("vault password cannot be empty or whitespace")
+						continue
+					}
+
+					vaultMasterKey, err = encryption.DeriveVaultMasterKey(pass)
+					if err != nil {
+						return fmt.Errorf("Error deriving vault master key: %w", err)
+					}
+
+					// Load vault and decrypt it using vault key
+					vaultData, err = encryption.LoadVault(vaultMasterKey)
+					if err != nil {
+						if errors.Is(err, encryption.ErrInvalidVaultKeyOrCorrupted) {
+							fmt.Println("Failed to unlock vault. The password may be incorrect or the vault file may be corrupted.")
+							continue
+						}
+						if errors.Is(err, encryption.ErrVaultNotFound) {
+							return err
+						}
+					}
+
+					break
+				}
+
+				// Update the vault with new (fileID -> fileDEK) and store
+				vaultData.Entries[presignResource.FileID.String()] = base64.StdEncoding.EncodeToString(fileDEK)
+
+				if err = encryption.EncryptAndStoreVault(vaultData, vaultMasterKey); err != nil {
+					if Verbose {
+						return fmt.Errorf("updating vault: %w", err)
+					}
+					return errors.New("error while updating vault")
+				}
+			}
+		}
+
+		// Encrypt and upload file
+
+		// Cancel if user presses ctrl+C
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+
+		// Enforce max upload time
+		ctx, cancel := context.WithTimeout(ctx, config.MaxTimeAllowedToUploadFile*time.Minute)
+		defer cancel()
+
+		if err := upload.UploadFileToS3(
+			ctx,
+			presignResource,
+			filePath,
+			fileDEK,
+		); err != nil {
+			if Verbose {
+				return fmt.Errorf("upload file: %w", err)
+			}
+			return errors.New("error while uploading file (use --verbose for details)")
+		}
+
+		// testing nonsense
+		fmt.Println("YOU DID IT!!!")
+		fmt.Println(fileSalt)
+		fmt.Println(fileHash)
+		return nil
+
 		// once the data is uploaded successfully send teh full metadata to backend for storage
 
 		// get cloudfront url at the end in response to download encrypted data
@@ -181,7 +338,7 @@ func init() {
 	// Key flag (long: --key, short: -k)
 	uploadCmd.Flags().BoolVarP(&noVault, "no-vault", "N", false, "Disable local key vault. Use a self-managed encryption passphrase. If lost, the file cannot be decrypted.")
 	// Name flag (long: --name, short: -n)
-	uploadCmd.Flags().StringVarP(&name, "name", "n", "", "Optional name for the file")
+	uploadCmd.Flags().StringVarP(&fileName, "name", "n", "", "Optional name for the file")
 
 	rootCmd.AddCommand(uploadCmd)
 }
