@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,24 +10,28 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
 
-// PostJSON to the server and receive response
-func PostJSON(endpoint string, reqBody, respBody any, token string) error {
-
-	// Encode out data as json
-	jsonData, err := json.Marshal(reqBody)
-	if err != nil {
-		return fmt.Errorf("error encoding data to json: %w", err)
-	}
+// Make GET requests to the server and receive response
+func GetJSON(endpoint string, respBody any, token string, queryParams map[string]string) error {
 
 	url := config.BaseURL + endpoint
-	// Create a post request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+
+	// Create a get request
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return fmt.Errorf("error creating post request: %w", err)
+		return fmt.Errorf("error creating get requests: %w", err)
+	}
+
+	// Add query params if needed
+	if queryParams != nil {
+		q := req.URL.Query()
+		for k, v := range queryParams {
+			q.Add(k, v)
+		}
+		req.URL.RawQuery = q.Encode()
 	}
 
 	// Set request headers
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	// Set authorization header if token is provided
 	if token != "" {
@@ -58,4 +61,5 @@ func PostJSON(endpoint string, reqBody, respBody any, token string) error {
 	}
 
 	return nil
+
 }
