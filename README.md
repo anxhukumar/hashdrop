@@ -1,33 +1,46 @@
 # Hashdrop
 
-Hashdrop is a work-in-progress secure file sharing and integrity verification tool with a Go backend and CLI client.
+Hashdrop is a secure file sharing and integrity verification tool consisting of a Go backend and a Go CLI client.
 
-It allows users to authenticate, upload files securely, encrypt them client-side with unique per-file keys, verify integrity using hashing, and generate secure downloadable access links. Files are uploaded to AWS S3 using presigned URLs, and encryption keys are handled entirely client-side with an optional encrypted local vault.
+Files are **encrypted locally** before upload using unique per-file Data Encryption Keys (DEKs), ensuring the server and storage provider never see plaintext. Uploaded data is stored in AWS S3 and delivered through AWS CloudFront. Users can verify file integrity via cryptographic hashing and manage encryption keys locally using an optional encrypted vault.
 
-> **Status:** Under active development  
-> Core functionality is being built. Documentation, tests, and polishing are in progress.
-
----
-
-## Features (Planned / In Progress)
-
-- Go backend + CLI client  
-- User authentication (access + refresh tokens)  
-- Client-side encryption with per-file DEKs  
-- Hash-based tamper verification  
-- Secure upload to S3 via presigned URLs  
-- Secure shareable download links  
-- Local encrypted key vault (with optional manual key mode)
+> **Status:** Work in progress  
+> Core features are being actively built. APIs, CLI UX, testing, docs, and cleanup are still evolving.
 
 ---
 
-## Tech
+## ✨ Features (Planned / In Progress)
 
-- Go  
-- AWS S3  
-- Client-side encryption + hashing  
+- ⚙️ Go backend + Go CLI client
+- 🔐 User authentication (access + refresh tokens)
+- 🛡️ Client-side encryption  
+  - unique per-file DEKs  
+  - AES-GCM streaming encryption
+- 🧾 Integrity verification via hashing
+- ☁️ Secure uploads using AWS S3 presigned URLs
+- 🌍 Secure file delivery via AWS CloudFront
+- 🔑 Local encrypted vault for key storage  
+  - optional **no-vault mode** (self-managed passphrase)
 
 ---
 
-## Note
-This project is still evolving. Not production-ready yet.
+## 🧰 Tech Stack
+
+- **Go**
+- **AWS S3** (encrypted blob storage)
+- **AWS CloudFront** (secure download delivery)
+- **Client-side cryptography**
+  - AES-GCM
+  - Argon2 key derivation
+  - SHA-256 hashing
+
+---
+
+## ⚠️ Note
+
+This project is still evolving and is **not production-ready yet**.  
+APIs may change, features may break, and security-critical components are still undergoing refinement.
+
+---
+
+More updates coming soon 🚀
