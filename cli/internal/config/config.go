@@ -45,4 +45,9 @@ const (
 	ArgonMemory  = 64 * 1024 // memory cost (KB) → 64MB
 	ArgonThreads = 1         // parallelism
 	ArgonKeyLen  = 32        // derived key length (bytes)
+
+	// ================================
+	// DOWNLOAD URL PREFIX
+	// ================================
+	UrlPrefix = "https://cdn.hashdrop.dev/"
 )

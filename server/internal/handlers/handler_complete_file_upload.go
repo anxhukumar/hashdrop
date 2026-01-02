@@ -68,8 +68,8 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		// Respond with failed status to client
-		RespondWithJSON(w, http.StatusRequestEntityTooLarge, FileUploadStatus{Successful: false})
+		// Respond with error
+		RespondWithError(w, s.logger, "File size exceeds the allowed limit", err, http.StatusRequestEntityTooLarge)
 		return
 	}
 
@@ -111,6 +111,12 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, FileUploadStatus{Successful: true})
+	RespondWithJSON(
+		w,
+		http.StatusOK,
+		FileUploadSuccessResponse{
+			S3ObjectKey:      ObjectKey,
+			UploadedFileSize: verifiedFileSize,
+		})
 
 }

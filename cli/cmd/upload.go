@@ -18,6 +18,7 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
+	"github.com/anxhukumar/hashdrop/cli/internal/ui"
 	"github.com/anxhukumar/hashdrop/cli/internal/upload"
 	"github.com/spf13/cobra"
 )
@@ -29,9 +30,13 @@ var (
 
 // uploadCmd represents the upload command
 var uploadCmd = &cobra.Command{
-	Use:          "upload <file-path>",
-	Short:        "",
-	Long:         ``,
+	Use:   "upload <file-path>",
+	Short: "Securely upload a file to Hashdrop",
+	Long: `
+Uploads a file to your Hashdrop account. The file is validated, encrypted on the client,
+and then uploaded using a secure presigned upload link. Metadata and integrity details
+are recorded so the file can be verified and retrieved later.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -120,7 +125,8 @@ var uploadCmd = &cobra.Command{
 			PlaintextSizeBytes: fileSize,
 			PassphraseSalt:     fileSaltStr,
 		}
-		if err := upload.CompleteFileUpload(uploadFileMetadata); err != nil {
+		successResp, err := upload.CompleteFileUpload(uploadFileMetadata)
+		if err != nil {
 
 			if Verbose {
 				return fmt.Errorf("complete file upload: %w", err)
@@ -136,8 +142,7 @@ var uploadCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Println("Upload completed successfully 🎉")
-		// get cloudfront url at the end in response to download encrypted data
+		ui.UploadSuccessfulMsg(fileName, presignResource.FileID.String(), successResp.S3ObjectKey, successResp.UploadedFileSize)
 		return nil
 	},
 }

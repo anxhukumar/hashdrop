@@ -65,6 +65,7 @@ type FileUploadMetadata struct {
 }
 
 // Outgoing: Send status if file upload is successfull
-type FileUploadStatus struct {
-	Successful bool `json:"successful"`
+type FileUploadSuccessResponse struct {
+	S3ObjectKey      string `json:"s3_object_key"`
+	UploadedFileSize int64  `json:"uploaded_file_size"`
 }

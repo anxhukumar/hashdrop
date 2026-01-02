@@ -28,7 +28,8 @@ type FileUploadMetadata struct {
 	PassphraseSalt     string    `json:"passphrase_salt"`
 }
 
-// Incoming: Status if file upload is successfull
-type FileUploadStatus struct {
-	Successful bool `json:"successful"`
+// Incoming: Success response if file upload is successfull
+type FileUploadSuccessResponse struct {
+	S3ObjectKey      string `json:"s3_object_key"`
+	UploadedFileSize int64  `json:"uploaded_file_size"`
 }
