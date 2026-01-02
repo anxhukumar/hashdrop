@@ -33,3 +33,21 @@ SET
     status = ?,
     updated_at = datetime('now')
 WHERE id = ? AND user_id = ? AND status='pending';
+
+-- name: GetAllFilesOfUser :many
+SELECT file_name, encrypted_size_bytes, status, key_management_mode, created_at, id
+FROM files
+WHERE user_id = ?
+ORDER BY created_at DESC;
+
+-- name: GetDetailedFileOfUser :many
+SELECT file_name, id, status, plaintext_size_bytes, encrypted_size_bytes, s3_key, key_management_mode, plaintext_hash
+FROM files
+WHERE user_id = ? AND id LIKE ?
+LIMIT 2;
+
+-- name: GetPassphraseSalt :many
+SELECT passphrase_salt
+FROM files
+WHERE user_id = ? AND id LIKE ?
+LIMIT 2;

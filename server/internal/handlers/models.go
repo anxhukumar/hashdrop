@@ -69,3 +69,13 @@ type FileUploadSuccessResponse struct {
 	S3ObjectKey      string `json:"s3_object_key"`
 	UploadedFileSize int64  `json:"uploaded_file_size"`
 }
+
+// Outgoing: Send all files of a user
+type FilesMetadata struct {
+	FileName           string    `json:"file_name"`
+	EncryptedSizeBytes int64     `json:"encrypted_size_bytes"`
+	Status             string    `json:"status"`
+	KeyManagementMode  string    `json:"key_management_mode"`
+	CreatedAt          time.Time `json:"created_at"`
+	ID                 uuid.UUID `json:"file_id"`
+}
