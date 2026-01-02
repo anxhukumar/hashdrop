@@ -8,7 +8,7 @@ import (
 
 func UploadSuccessfulMsg(fileName, fileID, s3ObjectKey string, fileSize int64) {
 	msg := fmt.Sprintf(`
-================= UPLOAD SUCCESSFUL 🎉 =================
+=================  UPLOAD SUCCESSFUL  ===================
 
 Your file has been securely encrypted and uploaded.
 

@@ -98,6 +98,8 @@ are recorded so the file can be verified and retrieved later.
 		ctx, cancel := context.WithTimeout(ctx, config.MaxTimeAllowedToUploadFile*time.Minute)
 		defer cancel()
 
+		fmt.Println("Uploading file…")
+
 		if err := upload.UploadFileToS3(
 			ctx,
 			presignResource,
@@ -134,12 +136,17 @@ are recorded so the file can be verified and retrieved later.
 			return errors.New("error while completing file upload (use --verbose for details)")
 		}
 
+		fmt.Println("✔ Upload complete")
+
 		// Only do this if chosen no-vault mode
 		if !noVault {
+			fmt.Println("🔐 Updating local vault…")
 			// Check if vault exists, create if it doesn't and update it
 			if err = encryption.CreateAndUpdateVault(fileDEK, presignResource.FileID, Verbose); err != nil {
 				return err
 			}
+
+			fmt.Println("✔ Vault updated")
 		}
 
 		ui.UploadSuccessfulMsg(fileName, presignResource.FileID.String(), successResp.S3ObjectKey, successResp.UploadedFileSize)

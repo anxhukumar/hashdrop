@@ -15,7 +15,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:          "list",
-	Short:        "",
+	Short:        "List all uploaded files",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
