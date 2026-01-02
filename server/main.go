@@ -56,8 +56,12 @@ func main() {
 		server.Auth(http.HandlerFunc(server.HandlerCompleteFileUpload)),
 	)
 	mux.Handle(
-		"GET /api/files",
+		"GET /api/files/all",
 		server.Auth(http.HandlerFunc(server.HandlerGetAllFiles)),
+	)
+	mux.Handle(
+		"GET /api/files",
+		server.Auth(http.HandlerFunc(server.HandlerGetDetailedFile)),
 	)
 
 	port := cfg.Port

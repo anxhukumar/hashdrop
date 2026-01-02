@@ -79,3 +79,15 @@ type FilesMetadata struct {
 	CreatedAt          time.Time `json:"created_at"`
 	ID                 uuid.UUID `json:"file_id"`
 }
+
+// Outgoing: Send deatils of one file
+type FileDetailedData struct {
+	FileName           string    `json:"file_name"`
+	ID                 uuid.UUID `json:"file_id"`
+	Status             string    `json:"status"`
+	PlaintextSizeBytes int64     `json:"plaintext_size_bytes"`
+	EncryptedSizeBytes int64     `json:"encrypted_size_bytes"`
+	S3Key              string    `json:"s3_key"`
+	KeyManagementMode  string    `json:"key_management_mode"`
+	PlaintextHash      string    `json:"plaintext_hash"`
+}

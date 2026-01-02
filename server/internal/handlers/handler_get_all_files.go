@@ -20,6 +20,17 @@ func (s *Server) HandlerGetAllFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(dbFileData) == 0 {
+		RespondWithError(
+			w,
+			s.logger,
+			"no matching file found",
+			errors.New("no matches found for the file id"),
+			http.StatusNotFound,
+		)
+		return
+	}
+
 	resp := []FilesMetadata{}
 	for _, data := range dbFileData {
 		resp = append(resp,
