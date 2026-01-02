@@ -10,7 +10,7 @@ import (
 // authCmd represents the auth command
 var filesCmd = &cobra.Command{
 	Use:   "files",
-	Short: "file commands",
+	Short: "File commands",
 }
 
 func init() {

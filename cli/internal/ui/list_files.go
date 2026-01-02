@@ -6,54 +6,47 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/list"
 )
 
-type filesDataString struct {
-	fileName           string
-	encryptedSizeBytes string
-	status             string
-	keyManagementMode  string
-	createdAt          string
-	shortFileId        string
-}
-
 func ListFiles(filesData []list.FilesMetadata) {
 
-	fileDataString := []filesDataString{}
-
-	for _, d := range filesData {
-
-		fileDataString = append(
-			fileDataString,
-			filesDataString{
-				fileName:           d.FileName,
-				encryptedSizeBytes: formatBytes(d.EncryptedSizeBytes),
-				status:             d.Status,
-				keyManagementMode:  d.KeyManagementMode,
-				createdAt:          d.CreatedAt.Format("2006-01-02"),
-				shortFileId:        d.ID.String()[:8],
-			},
-		)
-
+	if len(filesData) == 0 {
+		fmt.Println("No files found.")
+		return
 	}
 
-	msg := `
-================= NO VAULT MODE ENABLED =================
+	fmt.Println()
+	fmt.Println("Your files:")
+	fmt.Println("--------------------------------------------------------------------------------------")
+	fmt.Printf("%-10s  %-25s  %-10s  %-10s  %-8s  %-12s\n",
+		"ID",
+		"NAME",
+		"SIZE",
+		"STATUS",
+		"KEY",
+		"CREATED",
+	)
+	fmt.Println("--------------------------------------------------------------------------------------")
 
-You have chosen to disable the local key vault.
+	for _, d := range filesData {
+		fmt.Printf("%-10s  %-25s  %-10s  %-10s  %-8s  %-12s\n",
+			d.ID.String()[:8],
+			truncate(d.FileName, 25),
+			formatBytes(d.EncryptedSizeBytes),
+			d.Status,
+			d.KeyManagementMode,
+			d.CreatedAt.Format("2006-01-02"),
+		)
+	}
 
-In this mode:
-• You must manually provide and remember your encryption passphrase
-• The passphrase is never stored by HashDrop or backed up anywhere
-• Without your passphrase, your files cannot be decrypted
-• Loss of the passphrase results in permanent and irreversible data loss
-• Your passphrase must be at least 12 characters long
+	fmt.Println("--------------------------------------------------------------------------------------")
+	fmt.Println("Use `hashdrop files show <id>` to see file details")
+	fmt.Println()
+}
 
-This option is intended for users who explicitly want to self-manage encryption secrets.
-
-If you wish to proceed, press Enter.
-If you do not wish to proceed, press Ctrl+C to cancel.
----------------------------------------------------------
-`
-	fmt.Print(msg)
+func truncate(s string, max int) string {
+	if len(s) <= max {
+		return s
+	}
+	return s[:max-3] + "..."
 }
 
 func formatBytes(b int64) string {
@@ -61,11 +54,16 @@ func formatBytes(b int64) string {
 	if b < unit {
 		return fmt.Sprintf("%d B", b)
 	}
-	div, exp := int64(unit), 0
+
+	div := int64(unit)
+	exp := 0
 	for n := b / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
+
 	return fmt.Sprintf("%.1f %cB",
-		float64(b)/float64(div), "KMGTPE"[exp])
+		float64(b)/float64(div),
+		"KMGTPE"[exp],
+	)
 }
