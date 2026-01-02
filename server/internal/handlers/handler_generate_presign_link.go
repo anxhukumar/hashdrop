@@ -27,11 +27,14 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Generate userID hash to use it as prefix in s3
+	s3KeyPrefix := GenerateUserIDHash(userID.String(), s.cfg.UserIDHashSalt)
+
 	// Generate fileID
 	fileID := uuid.New()
 
 	// Make object key ("user-<user_id>/<file_id>")
-	s3ObjectKey := fmt.Sprintf("user-%s/%s", userID.String(), fileID.String())
+	s3ObjectKey := fmt.Sprintf("usrh-%s/%s", s3KeyPrefix, fileID.String())
 
 	// Generate presigned link with aws s3
 	presignedLinkResponse, err := aws.GeneratePresignedPUT(

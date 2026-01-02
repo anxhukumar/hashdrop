@@ -73,11 +73,11 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var keyManagementMode string
+	var keyManagementModeVal string
 	if FileUploadMetadata.PassphraseSalt == "" {
-		keyManagementMode = "vault"
+		keyManagementModeVal = "vault"
 	} else {
-		keyManagementMode = "passphrase"
+		keyManagementModeVal = "passphrase"
 	}
 
 	// Send data to db
@@ -94,7 +94,10 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 			Int64: verifiedFileSize,
 			Valid: verifiedFileSize > 0,
 		},
-		KeyManagementMode: keyManagementMode,
+		KeyManagementMode: sql.NullString{
+			String: keyManagementModeVal,
+			Valid:  keyManagementModeVal != "",
+		},
 		PassphraseSalt: sql.NullString{
 			String: FileUploadMetadata.PassphraseSalt,
 			Valid:  FileUploadMetadata.PassphraseSalt != "",
