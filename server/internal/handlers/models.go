@@ -91,3 +91,8 @@ type FileDetailedData struct {
 	KeyManagementMode  string    `json:"key_management_mode"`
 	PlaintextHash      string    `json:"plaintext_hash"`
 }
+
+// Outgoing: Send passphrase salt
+type passphraseSaltRes struct {
+	Salt string `json:"salt"`
+}
