@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/anxhukumar/hashdrop/cli/internal/list"
+	"github.com/anxhukumar/hashdrop/cli/internal/files"
 	"github.com/anxhukumar/hashdrop/cli/internal/ui"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ var listCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Get all the files of user
-		files, err := list.GetAllFiles()
+		files, err := files.GetAllFiles()
 		if err != nil {
 			if Verbose {
 				return fmt.Errorf("get files: %w", err)

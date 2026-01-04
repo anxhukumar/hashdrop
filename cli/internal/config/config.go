@@ -34,7 +34,8 @@ const (
 	RevokeRefreshTokenEndpoint = "/api/revoke"
 	GetPresignedLinkEndpoint   = "/api/files/presign"
 	CompleteFileUploadEndpoint = "/api/files/complete"
-	GetAllFiles                = "/api/files/all"
+	GetAllFilesEndpoint        = "/api/files/all"
+	GetDetailedFileEndpoint    = "/api/files"
 
 	// ================================
 	// Cryptography — Argon2 Parameters

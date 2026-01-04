@@ -43,11 +43,9 @@ ORDER BY created_at DESC;
 -- name: GetDetailedFile :many
 SELECT file_name, id, status, plaintext_size_bytes, encrypted_size_bytes, s3_key, key_management_mode, plaintext_hash
 FROM files
-WHERE user_id = ? AND id LIKE CAST(? AS TEXT)
-LIMIT 2;
+WHERE user_id = ? AND id LIKE CAST(? AS TEXT);
 
 -- name: GetPassphraseSalt :many
 SELECT passphrase_salt
 FROM files
-WHERE user_id = ? AND key_management_mode = 'passphrase' AND id LIKE CAST(? AS TEXT)
-LIMIT 2;
+WHERE user_id = ? AND key_management_mode = 'passphrase' AND id LIKE CAST(? AS TEXT);

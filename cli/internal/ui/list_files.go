@@ -3,10 +3,10 @@ package ui
 import (
 	"fmt"
 
-	"github.com/anxhukumar/hashdrop/cli/internal/list"
+	"github.com/anxhukumar/hashdrop/cli/internal/files"
 )
 
-func ListFiles(filesData []list.FilesMetadata) {
+func ListFiles(filesData []files.FilesMetadata) {
 
 	if len(filesData) == 0 {
 		fmt.Println("No files found.")

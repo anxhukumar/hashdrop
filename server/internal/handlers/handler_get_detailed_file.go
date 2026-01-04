@@ -44,32 +44,27 @@ func (s *Server) HandlerGetDetailedFile(w http.ResponseWriter, r *http.Request) 
 		RespondWithError(
 			w,
 			s.logger,
-			"no matching file found",
+			"no files found",
 			errors.New("no matches found for the file id"),
 			http.StatusNotFound,
 		)
 		return
 	}
 
-	if len(dbFileData) > 1 {
-		RespondWithError(w,
-			s.logger,
-			"multiple files matched the given partial id",
-			errors.New("multiple files matched the given partial id. please provide a longer / full id"),
-			http.StatusConflict,
+	resp := []FileDetailedData{}
+	for _, data := range dbFileData {
+		resp = append(resp,
+			FileDetailedData{
+				FileName:           data.FileName,
+				ID:                 data.ID,
+				Status:             data.Status,
+				PlaintextSizeBytes: data.PlaintextSizeBytes.Int64,
+				EncryptedSizeBytes: data.EncryptedSizeBytes.Int64,
+				S3Key:              data.S3Key,
+				KeyManagementMode:  data.KeyManagementMode.String,
+				PlaintextHash:      data.PlaintextHash.String,
+			},
 		)
-		return
-	}
-
-	resp := FileDetailedData{
-		FileName:           dbFileData[0].FileName,
-		ID:                 dbFileData[0].ID,
-		Status:             dbFileData[0].Status,
-		PlaintextSizeBytes: dbFileData[0].PlaintextSizeBytes.Int64,
-		EncryptedSizeBytes: dbFileData[0].EncryptedSizeBytes.Int64,
-		S3Key:              dbFileData[0].S3Key,
-		KeyManagementMode:  dbFileData[0].KeyManagementMode.String,
-		PlaintextHash:      dbFileData[0].PlaintextHash.String,
 	}
 
 	RespondWithJSON(w, http.StatusOK, resp)
