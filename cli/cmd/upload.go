@@ -155,7 +155,7 @@ are recorded so the file can be verified and retrieved later.
 }
 
 func init() {
-	// Key flag (long: --key, short: -k)
+	// No vault flag (long: --no-vault, short: -N)
 	uploadCmd.Flags().BoolVarP(&noVault, "no-vault", "N", false, "Disable local key vault. Use a self-managed encryption passphrase. If lost, the file cannot be decrypted.")
 	// Name flag (long: --name, short: -n)
 	uploadCmd.Flags().StringVarP(&fileName, "name", "n", "", "Optional name for the file")

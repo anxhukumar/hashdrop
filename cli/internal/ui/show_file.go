@@ -8,7 +8,11 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/files"
 )
 
-func ShowFile(fileData files.FileDetailedData) {
+func ShowFile(fileData files.FileDetailedData, encryptionKey string) {
+
+	if encryptionKey == "" {
+		encryptionKey = "hidden (use --reveal-key)"
+	}
 
 	downloadURL := fmt.Sprintf(
 		"%s/%s",
@@ -25,6 +29,7 @@ func ShowFile(fileData files.FileDetailedData) {
 	fmt.Println()
 
 	fmt.Println("Encryption:")
+	fmt.Printf("  Key:             %s\n", encryptionKey)
 	fmt.Printf("  Mode:            %s\n", fileData.KeyManagementMode)
 	fmt.Printf("  Plaintext size:  %s\n", formatBytes(fileData.PlaintextSizeBytes))
 	fmt.Printf("  Encrypted size:  %s\n", formatBytes(fileData.EncryptedSizeBytes))
