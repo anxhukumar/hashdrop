@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/server/internal/database"
+	"github.com/google/uuid"
 )
 
 func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request) {
@@ -16,10 +18,8 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	q := r.URL.Query()
-	file_id := q.Get("id")
-
-	if len(file_id) == 0 {
+	fileIdStr := r.URL.Query().Get("id")
+	if len(fileIdStr) == 0 {
 		RespondWithError(w,
 			s.logger,
 			"Missing file id in query parameter",
@@ -28,40 +28,40 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	file_id, err := uuid.Parse(fileIdStr)
+	if err != nil {
+		RespondWithError(w, s.logger, "invalid file id", err, http.StatusBadRequest)
+		return
+	}
+
 	dbFileData, err := s.store.Queries.GetPassphraseSalt(
 		r.Context(),
 		database.GetPassphraseSaltParams{
-			UserID:  userID,
-			Column2: file_id + "%",
+			UserID: userID,
+			ID:     file_id,
 		},
 	)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error fetching file data", err, http.StatusInternalServerError)
-		return
-	}
+		if errors.Is(err, sql.ErrNoRows) {
+			RespondWithError(
+				w, s.logger,
+				"Passphrase salt not available for this file",
+				err,
+				http.StatusNotFound,
+			)
+			return
+		}
 
-	if len(dbFileData) == 0 {
 		RespondWithError(
-			w,
-			s.logger,
-			"no matching file found",
-			errors.New("no matches found for the file id"),
-			http.StatusNotFound,
+			w, s.logger,
+			"Error fetching file data",
+			err,
+			http.StatusInternalServerError,
 		)
 		return
 	}
 
-	if len(dbFileData) > 1 {
-		RespondWithError(w,
-			s.logger,
-			"multiple files matched the given partial id",
-			errors.New("multiple files matched the given partial id. please provide a longer / full id"),
-			http.StatusConflict,
-		)
-		return
-	}
-
-	resp := passphraseSaltRes{Salt: dbFileData[0].String}
+	resp := passphraseSaltRes{Salt: dbFileData.String}
 
 	RespondWithJSON(w, http.StatusOK, resp)
 }

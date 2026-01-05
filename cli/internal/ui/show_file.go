@@ -15,7 +15,7 @@ func ShowFile(fileData files.FileDetailedData, encryptionKey string) {
 	}
 
 	downloadURL := fmt.Sprintf(
-		"%s/%s",
+		"%s%s",
 		config.UrlPrefix,
 		fileData.S3Key,
 	)
