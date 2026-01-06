@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/files"
@@ -36,27 +35,11 @@ func ShowFile(fileData files.FileDetailedData, encryptionKey string) {
 	fmt.Println()
 
 	fmt.Println("Integrity:")
-	fmt.Println("  Hash (SHA-256):")
-	fmt.Printf("    %s\n", wrapHash(fileData.PlaintextHash))
+	fmt.Printf("  Hash (SHA-256): %s\n", fileData.PlaintextHash)
 	fmt.Println()
 
 	fmt.Println("Access:")
 	fmt.Printf("  Download URL:    %s\n", downloadURL)
 	fmt.Println()
 	fmt.Println("------------------------------------------------")
-}
-
-func wrapHash(hash string) string {
-	const width = 64
-	var out string
-
-	for i := 0; i < len(hash); i += width {
-		end := i + width
-		if end > len(hash) {
-			end = len(hash)
-		}
-		out += hash[i:end] + "\n    "
-	}
-
-	return strings.TrimSpace(out)
 }

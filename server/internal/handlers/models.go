@@ -93,6 +93,11 @@ type FileDetailedData struct {
 }
 
 // Outgoing: Send passphrase salt
-type passphraseSaltRes struct {
+type PassphraseSaltRes struct {
 	Salt string `json:"salt"`
+}
+
+// Outgoing: send file hash
+type FileHash struct {
+	Hash string `json:"hash"`
 }

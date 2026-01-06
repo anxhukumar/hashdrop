@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
@@ -9,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlerGetFileHash(w http.ResponseWriter, r *http.Request) {
 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
@@ -34,34 +33,13 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	dbFileData, err := s.store.Queries.GetPassphraseSalt(
-		r.Context(),
-		database.GetPassphraseSaltParams{
-			UserID: userID,
-			ID:     file_id,
-		},
-	)
+	dbFileData, err := s.store.Queries.GetFileHash(r.Context(), database.GetFileHashParams{UserID: userID, ID: file_id})
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(
-				w, s.logger,
-				"Passphrase salt not available for this file",
-				err,
-				http.StatusNotFound,
-			)
-			return
-		}
-
-		RespondWithError(
-			w, s.logger,
-			"Error fetching file salt",
-			err,
-			http.StatusInternalServerError,
-		)
+		RespondWithError(w, s.logger, "Error fetching file hash", err, http.StatusInternalServerError)
 		return
 	}
 
-	resp := PassphraseSaltRes{Salt: dbFileData.String}
+	resp := FileHash{Hash: dbFileData.String}
 
 	RespondWithJSON(w, http.StatusOK, resp)
 }

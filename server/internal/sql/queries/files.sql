@@ -49,3 +49,8 @@ WHERE user_id = ? AND id LIKE CAST(? AS TEXT);
 SELECT passphrase_salt
 FROM files
 WHERE user_id = ? AND key_management_mode = 'passphrase' AND id = ?;
+
+-- name: GetFileHash :one
+SELECT plaintext_hash
+FROM files
+WHERE user_id = ? AND id = ?;

@@ -67,6 +67,10 @@ func main() {
 		"GET /api/files/salt",
 		server.Auth(http.HandlerFunc(server.HandlerGetPassphraseSalt)),
 	)
+	mux.Handle(
+		"GET /api/files/hash",
+		server.Auth(http.HandlerFunc(server.HandlerGetFileHash)),
+	)
 
 	port := cfg.Port
 	serv := &http.Server{

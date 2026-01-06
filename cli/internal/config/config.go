@@ -36,6 +36,8 @@ const (
 	CompleteFileUploadEndpoint = "/api/files/complete"
 	GetAllFilesEndpoint        = "/api/files/all"
 	GetDetailedFileEndpoint    = "/api/files"
+	GetSaltEndpoint            = "/api/files/salt"
+	GetFileHashEndpoint        = "/api/files/hash"
 
 	// ================================
 	// Cryptography — Argon2 Parameters
