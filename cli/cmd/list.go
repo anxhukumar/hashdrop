@@ -14,8 +14,20 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:          "list",
-	Short:        "List all uploaded files",
+	Use:   "list",
+	Short: "List your uploaded files",
+	Long: `
+Displays all files you have uploaded to your Hashdrop account.
+
+The list includes basic metadata such as:
+• File name
+• Encrypted size
+• Upload status
+• Key management mode (vault or passphrase)
+• Creation date
+
+Use this command to find file IDs or quickly inspect your stored files.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 

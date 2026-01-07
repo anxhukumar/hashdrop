@@ -33,9 +33,16 @@ var uploadCmd = &cobra.Command{
 	Use:   "upload <file-path>",
 	Short: "Securely upload a file to Hashdrop",
 	Long: `
-Uploads a file to your Hashdrop account. The file is validated, encrypted on the client,
-and then uploaded using a secure presigned upload link. Metadata and integrity details
-are recorded so the file can be verified and retrieved later.
+Encrypts a file locally and uploads it securely to your Hashdrop account.
+
+The file is:
+• Validated before upload
+• Encrypted client-side using a per-file encryption key
+• Uploaded via a secure presigned URL
+• Recorded with integrity metadata for later verification
+
+By default, the encryption key is stored in your local vault.
+Use --no-vault to manage the encryption secret yourself.
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {

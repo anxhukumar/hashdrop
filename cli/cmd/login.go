@@ -14,8 +14,14 @@ import (
 
 // LoginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:          "login",
-	Short:        "Login to your hashdrop account",
+	Use:   "login",
+	Short: "Log in to your Hashdrop account",
+	Long: `
+Authenticates you with your Hashdrop account using your email and password.
+
+On success, your access and refresh tokens are stored locally so you can
+use other Hashdrop commands without logging in again.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		email, err := prompt.ReadLine("Email: ")

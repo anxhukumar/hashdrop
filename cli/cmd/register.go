@@ -15,8 +15,14 @@ import (
 
 // RegisterCmd represents the register command
 var registerCmd = &cobra.Command{
-	Use:          "register",
-	Short:        "Register a new hashdrop account",
+	Use:   "register",
+	Short: "Create a new Hashdrop account",
+	Long: `
+Registers a new Hashdrop account using your email and password.
+
+You will be prompted to enter and confirm your password.
+Once registration succeeds, you can log in and start uploading encrypted files.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		email, err := prompt.ReadLine("Email: ")

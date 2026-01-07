@@ -21,8 +21,22 @@ var (
 
 // showCmd represents the show command
 var showCmd = &cobra.Command{
-	Use:          "show <file-id>",
-	Short:        "Show details of an uploaded file",
+	Use:   "show <file-id>",
+	Short: "Show details of a specific file",
+	Long: `
+Displays detailed metadata for a single uploaded file.
+
+Includes:
+• File name and ID
+• Upload status
+• Encryption mode
+• Sizes (plaintext and encrypted)
+• Integrity hash
+• Download URL
+
+If multiple files match the given ID prefix, all matches are shown.
+Use --reveal-key to display the encryption key from your local vault.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
