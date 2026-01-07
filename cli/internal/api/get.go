@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
+
+// Not found error
+var ErrNotFound = errors.New("resource not found")
 
 // Make GET requests to the server and receive response
 func GetJSON(endpoint string, respBody any, token string, queryParams map[string]string) error {
@@ -47,6 +51,10 @@ func GetJSON(endpoint string, respBody any, token string, queryParams map[string
 		return fmt.Errorf("request failed: %w", err)
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return ErrNotFound
+	}
 
 	if res.StatusCode >= 400 {
 		body, _ := io.ReadAll(res.Body)

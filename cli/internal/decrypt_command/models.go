@@ -1,4 +1,4 @@
-package decrypt
+package decryptCommand
 
 // Incoming: passphrase salt
 type PassphraseSalt struct {

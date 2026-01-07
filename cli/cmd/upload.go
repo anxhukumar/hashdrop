@@ -136,7 +136,7 @@ are recorded so the file can be verified and retrieved later.
 			return errors.New("error while completing file upload (use --verbose for details)")
 		}
 
-		fmt.Println("✔ Upload complete")
+		fmt.Println("✅ Upload complete")
 
 		// Only do this if chosen no-vault mode
 		if !noVault {

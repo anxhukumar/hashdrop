@@ -1,4 +1,4 @@
-package decrypt
+package decryptCommand
 
 import (
 	"github.com/anxhukumar/hashdrop/cli/internal/api"

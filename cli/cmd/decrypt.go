@@ -4,34 +4,44 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
-	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
-	"github.com/anxhukumar/hashdrop/cli/internal/decrypt"
+	decryptCommand "github.com/anxhukumar/hashdrop/cli/internal/decrypt_command"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
-	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
-	"github.com/anxhukumar/hashdrop/cli/internal/verify"
 	"github.com/spf13/cobra"
 )
 
 var (
 	verifyFlag bool
+	vaultFlag  bool
+	keyFlag    bool
 )
 
 // decryptCmd represents the decrypt command
 var decryptCmd = &cobra.Command{
-	Use:          "decrypt <file-url> [destination]",
-	Short:        "",
+	Use:   "decrypt <file-url> [destination]",
+	Short: "Decrypt a file from a Hashdrop download link",
+	Long: `
+Decrypts a file that was shared or downloaded via a Hashdrop URL.
+
+You provide the file's download link and Hashdrop will:
+• Retrieve the encrypted file
+• Ask for the required decryption secret (vault, passphrase, or raw key)
+• Decrypt the file locally
+• Optionally verify its integrity using the original hash
+
+By default, the decrypted file is saved to your Downloads directory.
+You may optionally provide a destination path or directory.
+
+Examples:
+  hashdrop decrypt https://cdn.hashdrop.dev/... 
+  hashdrop decrypt https://cdn.hashdrop.dev/... ./output.txt
+  hashdrop decrypt --key https://cdn.hashdrop.dev/... --verify
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -54,190 +64,78 @@ var decryptCmd = &cobra.Command{
 		}
 		fileID := path.Base(u.Path)
 
-		// Check if vault exists
-		ok, err := encryption.VaultExists()
-		if err != nil {
-			if Verbose {
-				return fmt.Errorf("vault exists: %w", err)
-			}
-			return errors.New("failed to check if vault exists locally")
-		}
-
 		var DEK []byte
 
-		// If it exists
-		if ok {
-			fmt.Println("🔐 Vault detected")
-			// Check if the fileId exists in the vault
-			var vaultMasterKey []byte
-			var vaultData encryption.Vault
+		// Block if both flags are used
+		if vaultFlag && keyFlag {
+			return errors.New("choose only one mode: --vault or --key")
+		}
 
-			for {
-				// Derive vault master key
-				pass, err := prompt.ReadPassword("Enter vault password: ")
-				if err != nil {
-					return err
-				}
+		// If user didn't select any mode with flag, show options
+		if !vaultFlag && !keyFlag {
+			decryptMode, err := decryptCommand.ShowDecryptionOptions()
+			if err != nil {
+				return err
+			}
 
-				if strings.TrimSpace(pass) == "" {
-					fmt.Println("vault password cannot be empty or whitespace")
-					continue
-				}
-
-				vaultMasterKey, err = encryption.DeriveVaultMasterKey(pass)
-				if err != nil {
-					return fmt.Errorf("Error deriving vault master key: %w", err)
-				}
-
-				// Load vault and decrypt it using vault key
-				vaultData, err = encryption.LoadVault(vaultMasterKey)
-				if err != nil {
-					if errors.Is(err, encryption.ErrInvalidVaultKeyOrCorrupted) {
-						fmt.Println("Failed to unlock vault. The password may be incorrect or the vault file may be corrupted.")
-						continue
-					}
-					if errors.Is(err, encryption.ErrVaultNotFound) {
-						return err
-					}
-				}
-
-				dekString, ok := vaultData.Entries[fileID]
-				if !ok {
-					fmt.Println("ℹ️ This file is not stored in your vault. Switching to passphrase mode.")
-					break
-				}
-
-				// Fetch data encryption key
-				decoded, err := base64.StdEncoding.DecodeString(dekString)
-				if err != nil {
-					return fmt.Errorf("invalid DEK encoding in vault: %w", err)
-				}
-
-				DEK = decoded
-
-				break
+			switch decryptMode {
+			case decryptCommand.VaultDecryptMode:
+				vaultFlag = true
+			case decryptCommand.KeyDecryptMode:
+				keyFlag = true
 			}
 		}
 
-		// If vault doesn't exist or the key doesn't exist in vault
-		if len(DEK) == 0 {
-			fmt.Println("🔁 Using passphrase mode")
+		// If user selected vault
+		// Check in vault if the file exists and return the DEK
+		if vaultFlag {
+			DEK, err = decryptCommand.CheckVaultForKey(fileID, Verbose)
+			if err != nil {
+				return err
+			}
 
-			for {
+			if len(DEK) == 0 {
+				return errors.New("file not found in vault. Try --key mode instead")
+			}
+		}
 
-				pass, err := prompt.ReadPassword("Enter passphrase: ")
-				if err != nil {
-					return err
-				}
-
-				if strings.TrimSpace(pass) == "" {
-					fmt.Println("passphrase cannot be empty or whitespace")
-					continue
-				}
-
-				// Get salt from backend
-				salt, err := decrypt.GetSalt(fileID)
-				if err != nil {
-					if Verbose {
-						return fmt.Errorf("get salt: %w", err)
-					}
-					return errors.New("this file was not uploaded using passphrase mode and is not present in your vault")
-				}
-
-				// Parse string salt to bytes
-				decodedSalt, err := base64.StdEncoding.DecodeString(salt)
-				if err != nil {
-					return fmt.Errorf("invalid salt encoding: %w", err)
-				}
-
-				fileDEK := encryption.DeriveDEK(pass, decodedSalt)
-
-				DEK = fileDEK
-
-				break
+		// If user selects key mode, process passphrase or key directly
+		if keyFlag {
+			DEK, err = decryptCommand.GetEncryptionKeyFromUser(fileID)
+			if err != nil {
+				return err
 			}
 		}
 
 		// Decrypt file
 
 		// Get encrypted file
-		encFileData, err := http.Get(fileUrl)
+		encFileData, err := decryptCommand.DownloadEncryptedFile(fileUrl, Verbose)
 		if err != nil {
-			if Verbose {
-				return fmt.Errorf("download failed: %w", err)
-			}
-			return errors.New("error while downloading file data")
+			return err
 		}
-		defer encFileData.Body.Close()
-
-		if encFileData.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(encFileData.Body)
-			if Verbose {
-				return fmt.Errorf("download error: %s | %s", encFileData.Status, string(body))
-			}
-			return errors.New("error while downloading file data")
-		}
-
-		// Get output file
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("failed to get home directory: %w", err)
-		}
+		defer encFileData.Close()
 
 		// If user provided a path use that otherwise decrypt in download directory
-		finalOutPath := ""
-		if len(decryptionFilePath) != 0 {
-			info, err := os.Stat(decryptionFilePath)
-			if err == nil && info.IsDir() {
-				// User provided a directory
-				finalOutPath = filepath.Join(decryptionFilePath, fileID)
-			} else {
-				// User provided a file path (may not exist yet)
-				finalOutPath = decryptionFilePath
-			}
-
-		} else {
-			finalOutPath = filepath.Join(homeDir, "Downloads", fileID)
-		}
-
-		out, err := os.Create(finalOutPath)
+		out, finalOutPath, err := decryptCommand.GetOutputFile(fileID, Verbose, decryptionFilePath)
 		if err != nil {
-			if Verbose {
-				return fmt.Errorf("create output: %w", err)
-			}
-			return errors.New("error while creating output path")
+			return err
 		}
 		defer out.Close()
 
-		derivedPlaintextHash, err := encryption.DecryptAndHashStreaming(encFileData.Body, out, DEK)
+		derivedPlaintextHash, err := encryption.DecryptAndHashStreaming(encFileData, out, DEK)
 		if err != nil {
 			if Verbose {
 				return fmt.Errorf("decrypt failed: %w", err)
 			}
-			return errors.New("error while decrypting file")
+			return errors.New("error while decrypting file (use --verbose for details)")
 		}
 
 		if verifyFlag {
-			originalHashStr, err := verify.GetFileHash(fileID)
+			err := decryptCommand.VerifyHash(fileID, Verbose, derivedPlaintextHash)
 			if err != nil {
-				if Verbose {
-					return fmt.Errorf("get original hash: %w", err)
-				}
-				return errors.New("error while getting original file hash")
+				return err
 			}
-
-			originalHashBytes, err := hex.DecodeString(originalHashStr)
-			if err != nil {
-				return fmt.Errorf("invalid hash format from server: %w", err)
-			}
-
-			// Verify hash
-			if !bytes.Equal(derivedPlaintextHash, originalHashBytes) {
-				fmt.Println("❌ Hash mismatch — file may be corrupted")
-				return nil
-			}
-
-			fmt.Println("✅ Hash verified — file is intact")
 		}
 
 		fmt.Printf("📁 Decrypted file written to: %s\n", finalOutPath)
@@ -247,6 +145,8 @@ var decryptCmd = &cobra.Command{
 }
 
 func init() {
+	decryptCmd.Flags().BoolVar(&vaultFlag, "vault", false, "Use vault mode for decryption")
+	decryptCmd.Flags().BoolVar(&keyFlag, "key", false, "Use key directly for decryption")
 	// (long: --verify, short: -V)
 	decryptCmd.Flags().BoolVarP(&verifyFlag, "verify", "V", false, "Verify file integrity while decrypting")
 	rootCmd.AddCommand(decryptCmd)
