@@ -13,7 +13,12 @@ VALUES (
 -- name: GetS3KeyFromFileID :one
 SELECT s3_key
 FROM files
-WHERE id = ? AND user_id = ?;
+WHERE id = ? AND user_id = ? AND status='uploaded';
+
+-- name: GetS3KeyForUploadVerification :one
+SELECT s3_key
+FROM files
+WHERE id = ? AND user_id = ? AND status='pending';
 
 -- name: UpdateUploadedFile :exec
 UPDATE files
@@ -37,20 +42,27 @@ WHERE id = ? AND user_id = ? AND status='pending';
 -- name: GetAllFilesOfUser :many
 SELECT file_name, encrypted_size_bytes, status, key_management_mode, created_at, id
 FROM files
-WHERE user_id = ?
+WHERE user_id = ? AND status = 'uploaded'
 ORDER BY created_at DESC;
 
 -- name: GetDetailedFile :many
 SELECT file_name, id, status, plaintext_size_bytes, encrypted_size_bytes, s3_key, key_management_mode, plaintext_hash
 FROM files
-WHERE user_id = ? AND id LIKE CAST(? AS TEXT);
+WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT);
 
 -- name: GetPassphraseSalt :one
 SELECT passphrase_salt
 FROM files
-WHERE user_id = ? AND key_management_mode = 'passphrase' AND id = ?;
+WHERE user_id = ? AND status = 'uploaded' AND key_management_mode = 'passphrase' AND id = ?;
 
 -- name: GetFileHash :one
 SELECT plaintext_hash
 FROM files
-WHERE user_id = ? AND id = ?;
+WHERE user_id = ? AND status = 'uploaded' AND id = ?;
+
+-- name: DeleteFileFromId :exec
+UPDATE files
+SET
+    status = 'deleted',
+    updated_at = datetime('now')
+WHERE user_id = ? AND status = 'uploaded' AND id = ?;

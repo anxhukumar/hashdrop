@@ -29,7 +29,7 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 	// Get metadata of the uploaded file
 
 	// Fetch s3ObjectKey from db
-	ObjectKey, err := s.store.Queries.GetS3KeyFromFileID(r.Context(), database.GetS3KeyFromFileIDParams{
+	ObjectKey, err := s.store.Queries.GetS3KeyForUploadVerification(r.Context(), database.GetS3KeyForUploadVerificationParams{
 		ID:     FileUploadMetadata.FileID,
 		UserID: userID,
 	})
