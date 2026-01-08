@@ -71,6 +71,10 @@ func main() {
 		"GET /api/files/hash",
 		server.Auth(http.HandlerFunc(server.HandlerGetFileHash)),
 	)
+	mux.Handle(
+		"DELETE /api/files",
+		server.Auth(http.HandlerFunc(server.HandlerDeleteFile)),
+	)
 
 	port := cfg.Port
 	serv := &http.Server{

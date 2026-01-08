@@ -38,6 +38,7 @@ const (
 	GetDetailedFileEndpoint    = "/api/files"
 	GetSaltEndpoint            = "/api/files/salt"
 	GetFileHashEndpoint        = "/api/files/hash"
+	DeleteFileEndpoint         = "/api/files"
 
 	// ================================
 	// Cryptography — Argon2 Parameters

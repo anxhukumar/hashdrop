@@ -10,11 +10,6 @@ VALUES (
     datetime('now')
 );
 
--- name: GetS3KeyFromFileID :one
-SELECT s3_key
-FROM files
-WHERE id = ? AND user_id = ? AND status='uploaded';
-
 -- name: GetS3KeyForUploadVerification :one
 SELECT s3_key
 FROM files
@@ -65,4 +60,9 @@ UPDATE files
 SET
     status = 'deleted',
     updated_at = datetime('now')
-WHERE user_id = ? AND status = 'uploaded' AND id = ?;
+WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT);
+
+-- name: GetS3KeyFromFileID :one
+SELECT s3_key
+FROM files
+WHERE user_id = ? AND status='uploaded' AND id LIKE CAST(? AS TEXT);
