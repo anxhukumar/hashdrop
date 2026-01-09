@@ -43,10 +43,10 @@ func main() {
 
 	mux.HandleFunc("DELETE /admin/reset", server.HandlerReset)
 	mux.HandleFunc("GET /api/healthz", server.HandlerReadiness)
-	mux.HandleFunc("POST /api/register", server.HandlerCreateUser)
-	mux.HandleFunc("POST /api/login", server.HandlerLogin)
-	mux.HandleFunc("POST /api/refresh", server.HandlerRefreshToken)
-	mux.HandleFunc("POST /api/revoke", server.HandlerRevokeToken)
+	mux.HandleFunc("POST /api/user/register", server.HandlerCreateUser)
+	mux.HandleFunc("POST /api/user/login", server.HandlerLogin)
+	mux.HandleFunc("POST /api/token/refresh", server.HandlerRefreshToken)
+	mux.HandleFunc("POST /api/token/revoke", server.HandlerRevokeToken)
 	mux.Handle(
 		"POST /api/files/presign",
 		server.Auth(http.HandlerFunc(server.HandlerGeneratePresignLink)),
@@ -78,6 +78,10 @@ func main() {
 	mux.Handle(
 		"DELETE /api/files",
 		server.Auth(http.HandlerFunc(server.HandlerDeleteFile)),
+	)
+	mux.Handle(
+		"DELETE /api/user",
+		server.Auth(http.HandlerFunc(server.HandlerDeleteUser)),
 	)
 
 	port := cfg.Port

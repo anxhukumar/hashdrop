@@ -28,10 +28,10 @@ const (
 	// API Configuration
 	// ================================
 	BaseURL                       = "http://localhost:8080"
-	RegisterEndpoint              = "/api/register"
-	LoginEndpoint                 = "/api/login"
-	RefreshTokenEndpoint          = "/api/refresh"
-	RevokeRefreshTokenEndpoint    = "/api/revoke"
+	RegisterEndpoint              = "/api/user/register"
+	LoginEndpoint                 = "/api/user/login"
+	RefreshTokenEndpoint          = "/api/token/refresh"
+	RevokeRefreshTokenEndpoint    = "/api/token/revoke"
 	GetPresignedLinkEndpoint      = "/api/files/presign"
 	CompleteFileUploadEndpoint    = "/api/files/complete"
 	GetAllFilesEndpoint           = "/api/files/all"
@@ -40,6 +40,7 @@ const (
 	GetFileHashEndpoint           = "/api/files/hash"
 	DeleteFileEndpoint            = "/api/files"
 	ResolveFileIDConflictEndpoint = "/api/files/resolve"
+	DeleteUserEndpoint            = "/api/user"
 
 	// ================================
 	// Cryptography — Argon2 Parameters

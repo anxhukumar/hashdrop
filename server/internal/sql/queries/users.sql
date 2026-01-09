@@ -16,3 +16,8 @@ DELETE FROM users;
 SELECT *
 FROM users
 WHERE email = ?;
+
+-- name: DeleteUserById :exec
+DELETE
+FROM users
+WHERE id = ?;

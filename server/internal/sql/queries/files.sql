@@ -70,4 +70,10 @@ WHERE user_id = ? AND status='uploaded' AND id LIKE CAST(? AS TEXT);
 -- name: CheckShortFileIDConflict :many
 SELECT file_name, id
 FROM files
-WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT); 
+WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT);
+
+-- name: GetAnyS3KeyOfUser :one
+SELECT s3_key
+FROM files
+WHERE user_id = ? AND status = 'uploaded'
+LIMIT 1;
