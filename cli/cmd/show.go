@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/anxhukumar/hashdrop/cli/internal/auth"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 	"github.com/anxhukumar/hashdrop/cli/internal/files"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
@@ -45,6 +46,30 @@ Use --reveal-key to display the encryption key from your local vault.
 		}
 		fileID := args[0]
 
+		// If we end up receiving more than one file then show the full id of all those files
+		// Get access token
+		token, err := auth.EnsureAccessToken()
+		if err != nil {
+			if Verbose {
+				return fmt.Errorf("error authenticating user: %w", err)
+			}
+			return errors.New("error authenticating user")
+		}
+
+		queryParam := map[string]string{
+			"id": fileID,
+		}
+
+		fileMatches, err := files.CheckMultipleShortFileIDMatch(fileID, queryParam, token)
+		if err != nil {
+			return err
+		}
+
+		if len(fileMatches) > 1 {
+			ui.ShowMultipleFileMatches(fileMatches)
+			return nil
+		}
+
 		// Get details of a file
 		file, err := files.GetDetailedFile(fileID)
 		if err != nil {
@@ -52,12 +77,6 @@ Use --reveal-key to display the encryption key from your local vault.
 				return fmt.Errorf("show file: %w", err)
 			}
 			return errors.New("error getting file (use --verbose for details)")
-		}
-
-		// If we end up receiving more than one file then show the full id of all those files
-		if len(file) > 1 {
-			ui.ShowMultipleFileMatches(file)
-			return nil
 		}
 
 		// If reveal key flag is provided show the reveal key of the file from vault after decrypting the vault

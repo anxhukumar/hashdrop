@@ -60,6 +60,10 @@ func main() {
 		server.Auth(http.HandlerFunc(server.HandlerGetAllFiles)),
 	)
 	mux.Handle(
+		"GET /api/files/resolve",
+		server.Auth(http.HandlerFunc(server.HandlerResolveFileMatches)),
+	)
+	mux.Handle(
 		"GET /api/files",
 		server.Auth(http.HandlerFunc(server.HandlerGetDetailedFile)),
 	)

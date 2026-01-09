@@ -6,7 +6,7 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/files"
 )
 
-func ShowMultipleFileMatches(matches []files.FileDetailedData) {
+func ShowMultipleFileMatches(matches []files.FileIDConflictMatches) {
 
 	fmt.Println()
 	fmt.Println("──────────────────────────────────────────────")
@@ -17,7 +17,7 @@ func ShowMultipleFileMatches(matches []files.FileDetailedData) {
 
 	for _, f := range matches {
 		fmt.Printf("  • %s\n", f.FileName)
-		fmt.Printf("    ID: %s\n\n", f.ID.String())
+		fmt.Printf("    ID: %s\n\n", f.FileID.String())
 	}
 
 	fmt.Println("──────────────────────────────────────────────")

@@ -11,7 +11,9 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/api"
 	"github.com/anxhukumar/hashdrop/cli/internal/auth"
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
+	"github.com/anxhukumar/hashdrop/cli/internal/files"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
+	"github.com/anxhukumar/hashdrop/cli/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +34,8 @@ var deleteCmd = &cobra.Command{
 			return err
 		}
 
-		if strings.ToLower(userConfirmation) != "y" {
+		if strings.ToLower(strings.TrimSpace(userConfirmation)) != "y" {
+			fmt.Println("Aborted.")
 			return nil
 		}
 
@@ -47,6 +50,17 @@ var deleteCmd = &cobra.Command{
 
 		queryParam := map[string]string{
 			"id": fileID,
+		}
+
+		// Check if there are multiple matches of the short FileID
+		fileMatches, err := files.CheckMultipleShortFileIDMatch(fileID, queryParam, token)
+		if err != nil {
+			return err
+		}
+
+		if len(fileMatches) > 1 {
+			ui.ShowMultipleFileMatches(fileMatches)
+			return nil
 		}
 
 		err = api.Delete(config.DeleteFileEndpoint, token, queryParam)

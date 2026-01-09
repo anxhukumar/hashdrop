@@ -101,3 +101,9 @@ type PassphraseSaltRes struct {
 type FileHash struct {
 	Hash string `json:"hash"`
 }
+
+// Outgoing: send multiple file matches to resolve file id conflict
+type FileIDConflictMatches struct {
+	FileName string    `json:"file_name"`
+	FileID   uuid.UUID `json:"file_id"`
+}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 
@@ -39,14 +40,29 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			RespondWithError(w, s.logger, "File not found", err, http.StatusNotFound)
+			return
+		}
 		RespondWithError(w, s.logger, "Error fetching s3 key", err, http.StatusInternalServerError)
+		return
+	}
+
+	if len(ObjectKey) > 1 {
+		RespondWithError(
+			w,
+			s.logger,
+			"File ID is ambiguous",
+			errors.New("multiple files match this ID prefix"),
+			http.StatusConflict,
+		)
 		return
 	}
 
 	// Delete object from s3
 	_, err = s.s3Client.DeleteObject(r.Context(), &s3.DeleteObjectInput{
 		Bucket: aws.String(s.cfg.S3Bucket),
-		Key:    aws.String(ObjectKey),
+		Key:    aws.String(ObjectKey[0]),
 	})
 	if err != nil {
 		RespondWithError(w, s.logger, "Error deleting file from s3", err, http.StatusInternalServerError)

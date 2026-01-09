@@ -27,18 +27,19 @@ const (
 	// ================================
 	// API Configuration
 	// ================================
-	BaseURL                    = "http://localhost:8080"
-	RegisterEndpoint           = "/api/register"
-	LoginEndpoint              = "/api/login"
-	RefreshTokenEndpoint       = "/api/refresh"
-	RevokeRefreshTokenEndpoint = "/api/revoke"
-	GetPresignedLinkEndpoint   = "/api/files/presign"
-	CompleteFileUploadEndpoint = "/api/files/complete"
-	GetAllFilesEndpoint        = "/api/files/all"
-	GetDetailedFileEndpoint    = "/api/files"
-	GetSaltEndpoint            = "/api/files/salt"
-	GetFileHashEndpoint        = "/api/files/hash"
-	DeleteFileEndpoint         = "/api/files"
+	BaseURL                       = "http://localhost:8080"
+	RegisterEndpoint              = "/api/register"
+	LoginEndpoint                 = "/api/login"
+	RefreshTokenEndpoint          = "/api/refresh"
+	RevokeRefreshTokenEndpoint    = "/api/revoke"
+	GetPresignedLinkEndpoint      = "/api/files/presign"
+	CompleteFileUploadEndpoint    = "/api/files/complete"
+	GetAllFilesEndpoint           = "/api/files/all"
+	GetDetailedFileEndpoint       = "/api/files"
+	GetSaltEndpoint               = "/api/files/salt"
+	GetFileHashEndpoint           = "/api/files/hash"
+	DeleteFileEndpoint            = "/api/files"
+	ResolveFileIDConflictEndpoint = "/api/files/resolve"
 
 	// ================================
 	// Cryptography — Argon2 Parameters

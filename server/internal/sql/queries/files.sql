@@ -62,7 +62,12 @@ SET
     updated_at = datetime('now')
 WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT);
 
--- name: GetS3KeyFromFileID :one
+-- name: GetS3KeyFromFileID :many
 SELECT s3_key
 FROM files
 WHERE user_id = ? AND status='uploaded' AND id LIKE CAST(? AS TEXT);
+
+-- name: CheckShortFileIDConflict :many
+SELECT file_name, id
+FROM files
+WHERE user_id = ? AND status = 'uploaded' AND id LIKE CAST(? AS TEXT); 
