@@ -19,8 +19,14 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:          "delete <file-id>",
-	Short:        "Delete an uploaded file",
+	Use:   "delete <file-id>",
+	Short: "Delete an uploaded file",
+	Long: `
+Deletes a file from your Hashdrop account.
+
+This permanently removes the encrypted file from storage.
+Once deleted, the file can no longer be downloaded, decrypted, or recovered.
+`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
@@ -45,7 +51,7 @@ var deleteCmd = &cobra.Command{
 			if Verbose {
 				return fmt.Errorf("error authenticating user: %w", err)
 			}
-			return errors.New("error authenticating user")
+			return errors.New("error authenticating user (use --verbose for details)")
 		}
 
 		queryParam := map[string]string{
@@ -68,8 +74,10 @@ var deleteCmd = &cobra.Command{
 			if Verbose {
 				return fmt.Errorf("error deleting: %w", err)
 			}
-			return errors.New("failed to delete file")
+			return errors.New("failed to delete file (use --verbose for details)")
 		}
+
+		fmt.Println("✔ File deleted successfully.")
 
 		return nil
 
