@@ -5,19 +5,40 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
 )
 
 func (s *Server) HandlerDeleteUser(w http.ResponseWriter, r *http.Request) {
 
-	// Get userID from context
-	userID, ok := UserIDFromContext(r.Context())
-	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+	// Get decoded incoming user login data
+	var userLoginIncoming UserLoginIncoming
+	if err := DecodeJson(r, &userLoginIncoming); err != nil {
+		RespondWithError(w, s.logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		return
+	}
+
+	// Check if user is registered and get account details
+	userData, err := s.store.Queries.GetUserByEmail(r.Context(), userLoginIncoming.Email)
+	if err != nil {
+		RespondWithError(w, s.logger, "Invalid username or password", err, http.StatusUnauthorized)
+		return
+	}
+
+	// Check if password is correct
+	isMatch, err := auth.CheckPasswordHash(userLoginIncoming.Password, userData.HashedPassword)
+	if err != nil {
+		RespondWithError(w, s.logger, "Error verifying password", err, http.StatusInternalServerError)
+		return
+	}
+
+	if !isMatch {
+		RespondWithError(w, s.logger, "Invalid username or password", nil, http.StatusUnauthorized)
 		return
 	}
 
 	// Get s3 key of user
-	s3Key, err := s.store.Queries.GetAnyS3KeyOfUser(r.Context(), userID)
+	s3Key, err := s.store.Queries.GetAnyS3KeyOfUser(r.Context(), userData.ID)
 	if err != nil {
 		if !errors.Is(err, sql.ErrNoRows) {
 			RespondWithError(w, s.logger, "Error getting s3 key of user", err, http.StatusInternalServerError)
@@ -46,7 +67,7 @@ func (s *Server) HandlerDeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete all users data from database
-	err = s.store.Queries.DeleteUserById(r.Context(), userID)
+	err = s.store.Queries.DeleteUserById(r.Context(), userData.ID)
 	if err != nil {
 		RespondWithError(w, s.logger, "Error deleting users data from database", err, http.StatusInternalServerError)
 		return

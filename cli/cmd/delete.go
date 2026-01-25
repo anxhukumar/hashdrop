@@ -10,7 +10,6 @@ import (
 
 	"github.com/anxhukumar/hashdrop/cli/internal/api"
 	"github.com/anxhukumar/hashdrop/cli/internal/auth"
-	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/files"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
 	"github.com/anxhukumar/hashdrop/cli/internal/ui"
@@ -69,7 +68,7 @@ Once deleted, the file can no longer be downloaded, decrypted, or recovered.
 			return nil
 		}
 
-		err = api.Delete(config.DeleteFileEndpoint, token, queryParam)
+		err = api.DeleteFile(token, queryParam)
 		if err != nil {
 			if Verbose {
 				return fmt.Errorf("error deleting: %w", err)

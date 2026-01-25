@@ -10,9 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/anxhukumar/hashdrop/cli/internal/api"
 	"github.com/anxhukumar/hashdrop/cli/internal/auth"
-	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
 	"github.com/spf13/cobra"
 )
@@ -59,19 +57,26 @@ Type [DELETE ALL MY DATA] to confirm: `)
 			return nil
 		}
 
-		// Get access token
-		token, err := auth.EnsureAccessToken()
+		fmt.Println()
+		fmt.Println("For security reasons, please re-enter your credentials to confirm account deletion.")
+		fmt.Println()
+
+		// Make the user login again for confirmation
+		email, err := prompt.ReadLine("Email: ")
 		if err != nil {
-			if Verbose {
-				return fmt.Errorf("error authenticating user: %w", err)
-			}
-			return errors.New("error authenticating user (use --verbose for details)")
+			return err
 		}
 
-		err = api.Delete(config.DeleteUserEndpoint, token, nil)
+		password, err := prompt.ReadPassword("Password: ")
+		if err != nil {
+			return err
+		}
+
+		// Create delete user request
+		err = auth.DeleteAccount(email, password)
 		if err != nil {
 			if Verbose {
-				return fmt.Errorf("error deleting account: %w", err)
+				return err
 			}
 			return errors.New("error deleting account (use --verbose for details)")
 		}
