@@ -14,14 +14,14 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
 	fileIdStr := r.URL.Query().Get("id")
 	if len(fileIdStr) == 0 {
 		RespondWithError(w,
-			s.logger,
+			s.Logger,
 			"Missing file id in query parameter",
 			errors.New("file id missing in query"),
 			http.StatusBadRequest)
@@ -30,11 +30,11 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 
 	file_id, err := uuid.Parse(fileIdStr)
 	if err != nil {
-		RespondWithError(w, s.logger, "invalid file id", err, http.StatusBadRequest)
+		RespondWithError(w, s.Logger, "invalid file id", err, http.StatusBadRequest)
 		return
 	}
 
-	dbFileData, err := s.store.Queries.GetPassphraseSalt(
+	dbFileData, err := s.Store.Queries.GetPassphraseSalt(
 		r.Context(),
 		database.GetPassphraseSaltParams{
 			UserID: userID,
@@ -44,7 +44,7 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			RespondWithError(
-				w, s.logger,
+				w, s.Logger,
 				"Passphrase salt not available for this file",
 				err,
 				http.StatusNotFound,
@@ -53,7 +53,7 @@ func (s *Server) HandlerGetPassphraseSalt(w http.ResponseWriter, r *http.Request
 		}
 
 		RespondWithError(
-			w, s.logger,
+			w, s.Logger,
 			"Error fetching file salt",
 			err,
 			http.StatusInternalServerError,

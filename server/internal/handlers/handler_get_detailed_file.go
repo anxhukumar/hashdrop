@@ -12,7 +12,7 @@ func (s *Server) HandlerGetDetailedFile(w http.ResponseWriter, r *http.Request) 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
@@ -21,14 +21,14 @@ func (s *Server) HandlerGetDetailedFile(w http.ResponseWriter, r *http.Request) 
 
 	if len(file_id) == 0 {
 		RespondWithError(w,
-			s.logger,
+			s.Logger,
 			"Missing file id in query parameter",
 			errors.New("file id missing in query"),
 			http.StatusBadRequest)
 		return
 	}
 
-	dbFileData, err := s.store.Queries.GetDetailedFile(
+	dbFileData, err := s.Store.Queries.GetDetailedFile(
 		r.Context(),
 		database.GetDetailedFileParams{
 			UserID:  userID,
@@ -36,14 +36,14 @@ func (s *Server) HandlerGetDetailedFile(w http.ResponseWriter, r *http.Request) 
 		},
 	)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error fetching file data", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error fetching file data", err, http.StatusInternalServerError)
 		return
 	}
 
 	if len(dbFileData) == 0 {
 		RespondWithError(
 			w,
-			s.logger,
+			s.Logger,
 			"no files found",
 			errors.New("no matches found for the file id"),
 			http.StatusNotFound,

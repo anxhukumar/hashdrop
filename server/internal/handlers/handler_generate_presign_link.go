@@ -16,19 +16,19 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	// Get decoded incoming file metadata
 	var FileMetadata FileUploadRequest
 	if err := DecodeJson(r, &FileMetadata); err != nil {
-		RespondWithError(w, s.logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
 		return
 	}
 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
 	// Generate userID hash to use it as prefix in s3
-	s3KeyPrefix := GenerateUserIDHash(userID.String(), s.cfg.UserIDHashSalt)
+	s3KeyPrefix := GenerateUserIDHash(userID.String(), s.Cfg.UserIDHashSalt)
 
 	// Generate fileID
 	fileID := uuid.New()
@@ -39,13 +39,13 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	// Generate presigned link with aws s3
 	presignedLinkResponse, err := aws.GeneratePresignedPUT(
 		r.Context(),
-		s.s3Client,
-		s.cfg.S3PresignedLinkExpiry,
-		s.cfg.S3Bucket,
+		s.S3Client,
+		s.Cfg.S3PresignedLinkExpiry,
+		s.Cfg.S3Bucket,
 		s3ObjectKey,
 	)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error generating presigned put link", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error generating presigned put link", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -57,9 +57,9 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		MimeType: sql.NullString{String: FileMetadata.MimeType, Valid: true},
 		S3Key:    s3ObjectKey,
 	}
-	err = s.store.Queries.CreatePendingFile(r.Context(), fileData)
+	err = s.Store.Queries.CreatePendingFile(r.Context(), fileData)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error creating file meta data", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error creating file meta data", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := RespondWithJSON(w, http.StatusOK, resp); err != nil {
-		s.logger.Println("failed to send response:", err)
+		s.Logger.Println("failed to send response:", err)
 		return
 	}
 }

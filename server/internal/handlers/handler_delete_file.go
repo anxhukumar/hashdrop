@@ -15,7 +15,7 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
@@ -24,7 +24,7 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 
 	if len(file_id) == 0 {
 		RespondWithError(w,
-			s.logger,
+			s.Logger,
 			"Missing file id in query parameter",
 			errors.New("file id missing in query"),
 			http.StatusBadRequest)
@@ -32,7 +32,7 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get s3 key of file and delete it first from the bucket
-	ObjectKey, err := s.store.Queries.GetS3KeyFromFileID(
+	ObjectKey, err := s.Store.Queries.GetS3KeyFromFileID(
 		r.Context(),
 		database.GetS3KeyFromFileIDParams{
 			UserID:  userID,
@@ -41,17 +41,17 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(w, s.logger, "File not found", err, http.StatusNotFound)
+			RespondWithError(w, s.Logger, "File not found", err, http.StatusNotFound)
 			return
 		}
-		RespondWithError(w, s.logger, "Error fetching s3 key", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error fetching s3 key", err, http.StatusInternalServerError)
 		return
 	}
 
 	if len(ObjectKey) > 1 {
 		RespondWithError(
 			w,
-			s.logger,
+			s.Logger,
 			"File ID is ambiguous",
 			errors.New("multiple files match this ID prefix"),
 			http.StatusConflict,
@@ -60,16 +60,16 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete object from s3
-	_, err = s.s3Client.DeleteObject(r.Context(), &s3.DeleteObjectInput{
-		Bucket: aws.String(s.cfg.S3Bucket),
+	_, err = s.S3Client.DeleteObject(r.Context(), &s3.DeleteObjectInput{
+		Bucket: aws.String(s.Cfg.S3Bucket),
 		Key:    aws.String(ObjectKey[0]),
 	})
 	if err != nil {
-		RespondWithError(w, s.logger, "Error deleting file from s3", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error deleting file from s3", err, http.StatusInternalServerError)
 		return
 	}
 
-	err = s.store.Queries.DeleteFileFromId(
+	err = s.Store.Queries.DeleteFileFromId(
 		r.Context(),
 		database.DeleteFileFromIdParams{
 			UserID:  userID,
@@ -77,7 +77,7 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error deleting file", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error deleting file", err, http.StatusInternalServerError)
 		return
 	}
 

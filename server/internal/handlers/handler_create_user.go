@@ -13,14 +13,14 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	// Get decoded incoming user json data
 	var userIncoming UserIncoming
 	if err := DecodeJson(r, &userIncoming); err != nil {
-		RespondWithError(w, s.logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
 		return
 	}
 
 	// Get hashed password
 	hashedPassword, err := auth.HashedPassword(userIncoming.Password)
 	if err != nil {
-		RespondWithError(w, s.logger, "Invalid password or password too short", err, http.StatusBadRequest)
+		RespondWithError(w, s.Logger, "Invalid password or password too short", err, http.StatusBadRequest)
 		return
 	}
 
@@ -30,9 +30,9 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		Email:          userIncoming.Email,
 		HashedPassword: hashedPassword,
 	}
-	userDbResponse, err := s.store.Queries.CreateNewUser(r.Context(), userDb)
+	userDbResponse, err := s.Store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error creating new user", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error creating new user", err, http.StatusInternalServerError)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := RespondWithJSON(w, http.StatusCreated, UserOutgoing); err != nil {
-		s.logger.Println("failed to send response:", err)
+		s.Logger.Println("failed to send response:", err)
 		return
 	}
 }

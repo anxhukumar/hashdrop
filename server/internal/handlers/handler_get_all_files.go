@@ -10,20 +10,20 @@ func (s *Server) HandlerGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
-	dbFileData, err := s.store.Queries.GetAllFilesOfUser(r.Context(), userID)
+	dbFileData, err := s.Store.Queries.GetAllFilesOfUser(r.Context(), userID)
 	if err != nil {
-		RespondWithError(w, s.logger, "Error while fetching user data", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error while fetching user data", err, http.StatusInternalServerError)
 		return
 	}
 
 	if len(dbFileData) == 0 {
 		RespondWithError(
 			w,
-			s.logger,
+			s.Logger,
 			"no matching file found",
 			errors.New("no matches found for the file id"),
 			http.StatusNotFound,

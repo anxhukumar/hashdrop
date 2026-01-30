@@ -13,14 +13,14 @@ func (s *Server) HandlerGetFileHash(w http.ResponseWriter, r *http.Request) {
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
 		return
 	}
 
 	fileIdStr := r.URL.Query().Get("id")
 	if len(fileIdStr) == 0 {
 		RespondWithError(w,
-			s.logger,
+			s.Logger,
 			"Missing file id in query parameter",
 			errors.New("file id missing in query"),
 			http.StatusBadRequest)
@@ -29,13 +29,13 @@ func (s *Server) HandlerGetFileHash(w http.ResponseWriter, r *http.Request) {
 
 	file_id, err := uuid.Parse(fileIdStr)
 	if err != nil {
-		RespondWithError(w, s.logger, "invalid file id", err, http.StatusBadRequest)
+		RespondWithError(w, s.Logger, "invalid file id", err, http.StatusBadRequest)
 		return
 	}
 
-	dbFileData, err := s.store.Queries.GetFileHash(r.Context(), database.GetFileHashParams{UserID: userID, ID: file_id})
+	dbFileData, err := s.Store.Queries.GetFileHash(r.Context(), database.GetFileHashParams{UserID: userID, ID: file_id})
 	if err != nil {
-		RespondWithError(w, s.logger, "Error fetching file hash", err, http.StatusInternalServerError)
+		RespondWithError(w, s.Logger, "Error fetching file hash", err, http.StatusInternalServerError)
 		return
 	}
 

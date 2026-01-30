@@ -11,19 +11,19 @@ import (
 
 // Server struct to give access of store and logger to each handler as a method
 type Server struct {
-	store    *store.Store
-	logger   *log.Logger
-	cfg      *config.Config
-	s3Config aws.Config
-	s3Client *s3.Client
+	Store    *store.Store
+	Logger   *log.Logger
+	Cfg      *config.Config
+	S3Config aws.Config
+	S3Client *s3.Client
 }
 
 func NewServer(store *store.Store, cfg *config.Config, s3Config aws.Config, s3Client *s3.Client) *Server {
 	return &Server{
-		store:    store,
-		logger:   log.Default(),
-		cfg:      cfg,
-		s3Config: s3Config,
-		s3Client: s3Client,
+		Store:    store,
+		Logger:   log.Default(),
+		Cfg:      cfg,
+		S3Config: s3Config,
+		S3Client: s3Client,
 	}
 }

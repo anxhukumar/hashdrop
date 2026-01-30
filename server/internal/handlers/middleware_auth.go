@@ -15,14 +15,14 @@ func (s *Server) Auth(next http.Handler) http.Handler {
 		// Get access token from header
 		token, err := auth.GetBearerToken(r.Header)
 		if err != nil {
-			RespondWithError(w, s.logger, "Missing or invalid access token", err, http.StatusUnauthorized)
+			RespondWithError(w, s.Logger, "Missing or invalid access token", err, http.StatusUnauthorized)
 			return
 		}
 
 		// Validate access token
-		userID, err := auth.ValidateJWT(token, s.cfg.JWTSecret)
+		userID, err := auth.ValidateJWT(token, s.Cfg.JWTSecret)
 		if err != nil {
-			RespondWithError(w, s.logger, "Invalid or expired access token", err, http.StatusUnauthorized)
+			RespondWithError(w, s.Logger, "Invalid or expired access token", err, http.StatusUnauthorized)
 			return
 		}
 
