@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/anxhukumar/hashdrop/server/internal/aws"
 	"github.com/anxhukumar/hashdrop/server/internal/config"
@@ -13,7 +12,6 @@ import (
 	"github.com/anxhukumar/hashdrop/server/internal/ratelimit"
 	"github.com/anxhukumar/hashdrop/server/internal/store"
 	_ "github.com/mattn/go-sqlite3"
-	"golang.org/x/time/rate"
 )
 
 func main() {
@@ -37,7 +35,7 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	// TODO: REMOVE THIS IF WE MIGRATE FROM SQLITE TO ANY OTHER DB
+	// WAL mode for SQLite
 	_, err = dbConn.Exec(`
     PRAGMA journal_mode=WAL;
     PRAGMA synchronous=NORMAL;
@@ -46,67 +44,21 @@ func main() {
 		log.Fatalf("failed to enable WAL mode: %s", err)
 	}
 
-	// Create store struct instance
+	// Initialize dependencies
 	store := store.NewStore(dbConn)
-	// Provide the store, config and s3 dependencies
 	server := handlers.NewServer(store, cfg, s3Config, s3Client)
 
 	// Rate limiting
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	limiters := &ratelimit.Limiters{
-		// ---------------------------------------------------------
-		// PUBLIC / ADMIN
-		// ---------------------------------------------------------
-
-		// Reset: Extreme protection. Only required for dev.
-		// 1 request every 30 seconds.
-		ResetGlobalLimiter: rate.NewLimiter(rate.Every(30*time.Second), 1),
-
-		// Healthz: Standard uptime monitoring.
-		// 5 requests per second global.
-		HealthzGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-
-		// Auth (Register/Login/DeleteAccount):
-		// Global: 10 per second.
-		// IP: 1 request every 5 seconds.
-		AuthGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-		AuthIPLimiter:     ratelimit.NewKeyRateLimiter(ctx, rate.Limit(0.1), 2),
-
-		// Token (Refresh/Revoke):
-		// Frequent but lightweight.
-		TokenGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
-		TokenIPLimiter:     ratelimit.NewKeyRateLimiter(ctx, rate.Limit(2), 10),
-
-		// ---------------------------------------------------------
-		// PRIVATE (S3 / DB INTENSIVE)
-		// ---------------------------------------------------------
-
-		// Upload (Presign/Complete):
-		// Global: 10 uploads/sec.
-		// User: 1 upload every 2 seconds.
-		UploadGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-		UploadUserLimiter:   ratelimit.NewKeyRateLimiter(ctx, rate.Limit(0.2), 3),
-
-		// List (GetAllFiles, ResolveMatches):
-		// Global: 50/sec (SQLite reads are very fast).
-		// User: 5/sec.
-		ListGlobalLimiter: rate.NewLimiter(rate.Limit(40), 80),
-		ListUserLimiter:   ratelimit.NewKeyRateLimiter(ctx, rate.Limit(5), 10),
-
-		// FileMeta (Detail, Salt, Hash, Delete):
-		// Global: 30/sec.
-		// User: 10/sec.
-		FileMetaGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
-		FileMetaUserLimiter:   ratelimit.NewKeyRateLimiter(ctx, rate.Limit(2), 5),
-	}
-
+	limiters := ratelimit.NewDefaultLimiters(ctx)
 	rl := &ratelimit.Binder{
 		Server:   server,
 		Limiters: limiters,
 	}
 
+	// Routes
 	mux := http.NewServeMux()
 
 	mux.Handle(
