@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/anxhukumar/hashdrop/server/internal/aws"
 	"github.com/anxhukumar/hashdrop/server/internal/config"
@@ -61,75 +65,47 @@ func main() {
 	// Routes
 	mux := http.NewServeMux()
 
-	mux.Handle(
-		"DELETE /admin/reset",
-		rl.Reset(http.HandlerFunc(server.HandlerReset)),
-	)
-	mux.Handle(
-		"GET /api/healthz",
-		rl.Healthz(http.HandlerFunc(server.HandlerReadiness)),
-	)
-	mux.Handle(
-		"POST /api/user/register",
-		rl.Auth(http.HandlerFunc(server.HandlerCreateUser)),
-	)
-	mux.Handle(
-		"POST /api/user/login",
-		rl.Auth(http.HandlerFunc(server.HandlerLogin)),
-	)
-	mux.Handle(
-		"POST /api/token/refresh",
-		rl.Token(http.HandlerFunc(server.HandlerRefreshToken)),
-	)
-	mux.Handle(
-		"POST /api/token/revoke",
-		rl.Token(http.HandlerFunc(server.HandlerRevokeToken)),
-	)
-	mux.Handle(
-		"DELETE /api/user",
-		rl.Auth(http.HandlerFunc(server.HandlerDeleteUser)),
-	)
-	mux.Handle(
-		"POST /api/files/presign",
-		server.Auth(rl.Upload(http.HandlerFunc(server.HandlerGeneratePresignLink))),
-	)
-	mux.Handle(
-		"POST /api/files/complete",
-		server.Auth(rl.Upload(http.HandlerFunc(server.HandlerCompleteFileUpload))),
-	)
-	mux.Handle(
-		"GET /api/files/all",
-		server.Auth(rl.List(http.HandlerFunc(server.HandlerGetAllFiles))),
-	)
-	mux.Handle(
-		"GET /api/files/resolve",
-		server.Auth(rl.List(http.HandlerFunc(server.HandlerResolveFileMatches))),
-	)
-	mux.Handle(
-		"GET /api/files",
-		server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetDetailedFile))),
-	)
-	mux.Handle(
-		"GET /api/files/salt",
-		server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetPassphraseSalt))),
-	)
-	mux.Handle(
-		"GET /api/files/hash",
-		server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetFileHash))),
-	)
-	mux.Handle(
-		"DELETE /api/files",
-		server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerDeleteFile))),
-	)
+	mux.Handle("DELETE /admin/reset", rl.Reset(http.HandlerFunc(server.HandlerReset)))
+	mux.Handle("GET /api/healthz", rl.Healthz(http.HandlerFunc(server.HandlerReadiness)))
+	mux.Handle("POST /api/user/register", rl.Auth(http.HandlerFunc(server.HandlerCreateUser)))
+	mux.Handle("POST /api/user/login", rl.Auth(http.HandlerFunc(server.HandlerLogin)))
+	mux.Handle("POST /api/token/refresh", rl.Token(http.HandlerFunc(server.HandlerRefreshToken)))
+	mux.Handle("POST /api/token/revoke", rl.Token(http.HandlerFunc(server.HandlerRevokeToken)))
+	mux.Handle("DELETE /api/user", rl.Auth(http.HandlerFunc(server.HandlerDeleteUser)))
+	mux.Handle("POST /api/files/presign", server.Auth(rl.Upload(http.HandlerFunc(server.HandlerGeneratePresignLink))))
+	mux.Handle("POST /api/files/complete", server.Auth(rl.Upload(http.HandlerFunc(server.HandlerCompleteFileUpload))))
+	mux.Handle("GET /api/files/all", server.Auth(rl.List(http.HandlerFunc(server.HandlerGetAllFiles))))
+	mux.Handle("GET /api/files/resolve", server.Auth(rl.List(http.HandlerFunc(server.HandlerResolveFileMatches))))
+	mux.Handle("GET /api/files", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetDetailedFile))))
+	mux.Handle("GET /api/files/salt", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetPassphraseSalt))))
+	mux.Handle("GET /api/files/hash", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetFileHash))))
+	mux.Handle("DELETE /api/files", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerDeleteFile))))
 
-	port := cfg.Port
 	serv := &http.Server{
 		Handler: mux,
-		Addr:    ":" + port,
+		Addr:    ":" + cfg.Port,
 	}
 
-	log.Printf("Server running on port: %s\n", port)
+	go func() {
+		log.Printf("Server running on port: %s\n", cfg.Port)
+		if err := serv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed: %s", err)
+		}
+	}()
 
-	// Log error if server fails.
-	log.Fatal(serv.ListenAndServe())
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	<-stop
+
+	log.Println("Shutting down server...")
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+
+	if err := serv.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited cleanly")
 }
