@@ -52,7 +52,7 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 	}
 
 	verifiedFileSize := aws.ToInt64(head.ContentLength) // int64
-	if verifiedFileSize > s.Cfg.S3MaxDataSize {
+	if verifiedFileSize > s.Cfg.S3PerFileMaxDataSize {
 		// Delete object
 		_, _ = s.S3Client.DeleteObject(r.Context(), &s3.DeleteObjectInput{
 			Bucket: aws.String(s.Cfg.S3Bucket),

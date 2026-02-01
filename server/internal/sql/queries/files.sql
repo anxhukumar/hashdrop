@@ -77,3 +77,13 @@ SELECT s3_key
 FROM files
 WHERE user_id = ? AND status = 'uploaded'
 LIMIT 1;
+
+-- name: GetTotalBytesOfUploadedFiles :one
+SELECT CAST(COALESCE(SUM(encrypted_size_bytes), 0) AS INTEGER) AS total_bytes
+FROM files
+WHERE status = 'uploaded';
+
+-- name: GetUsersTotalBytesOfUploadedFiles :one
+SELECT CAST(COALESCE(SUM(encrypted_size_bytes), 0) AS INTEGER) AS total_bytes
+FROM files
+WHERE user_id = ? AND status = 'uploaded';

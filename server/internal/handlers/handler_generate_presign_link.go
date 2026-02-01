@@ -8,6 +8,7 @@ import (
 
 	"github.com/anxhukumar/hashdrop/server/internal/aws"
 	"github.com/anxhukumar/hashdrop/server/internal/database"
+	storageguard "github.com/anxhukumar/hashdrop/server/internal/storage_guard"
 	"github.com/google/uuid"
 )
 
@@ -24,6 +25,52 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
 		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		return
+	}
+
+	// Check if the total space consumed by uploaded files is within limits
+	// Global quota
+	valid, err := storageguard.ValidateGlobalS3BucketStorageQuota(r.Context(), s.Store.Queries, s.Cfg.S3GlobalQuotaLimit)
+	if err != nil {
+		RespondWithError(
+			w,
+			s.Logger,
+			"Internal server error",
+			errors.New("error validating global s3 bucket quota"),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+	if !valid {
+		RespondWithError(
+			w,
+			s.Logger,
+			"Uploads are temporarily disabled due to system storage limits",
+			errors.New("global storage limit exceeded"),
+			http.StatusServiceUnavailable,
+		)
+		return
+	}
+	// User specific quota
+	valid, err = storageguard.ValidateUserS3BucketStorageQuota(r.Context(), s.Store.Queries, userID, s.Cfg.S3UserSpecificQuotaLimit)
+	if err != nil {
+		RespondWithError(
+			w,
+			s.Logger,
+			"Internal server error",
+			errors.New("error validating users s3 bucket quota"),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+	if !valid {
+		RespondWithError(
+			w,
+			s.Logger,
+			"Storage limit reached",
+			errors.New("user storage limit exceeded"),
+			http.StatusForbidden,
+		)
 		return
 	}
 

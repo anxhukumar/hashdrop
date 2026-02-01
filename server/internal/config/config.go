@@ -9,17 +9,19 @@ import (
 )
 
 type Config struct {
-	Port                  string
-	DbURL                 string
-	JWTSecret             string
-	AccessTokenExpiry     time.Duration
-	RefreshTokenExpiry    time.Duration
-	Platform              string
-	S3BucketRegion        string
-	S3PresignedLinkExpiry time.Duration
-	S3MaxDataSize         int64
-	S3Bucket              string
-	UserIDHashSalt        string
+	Port                     string
+	DbURL                    string
+	JWTSecret                string
+	AccessTokenExpiry        time.Duration
+	RefreshTokenExpiry       time.Duration
+	Platform                 string
+	S3BucketRegion           string
+	S3PresignedLinkExpiry    time.Duration
+	S3PerFileMaxDataSize     int64
+	S3Bucket                 string
+	UserIDHashSalt           string
+	S3GlobalQuotaLimit       int64
+	S3UserSpecificQuotaLimit int64
 }
 
 // Load environment variables and return a config struct
@@ -44,17 +46,19 @@ func LoadConfig() (*Config, error) {
 	}
 
 	cfg := &Config{
-		Port:                  getEnv("PORT"),
-		DbURL:                 getEnv("DB"),
-		JWTSecret:             getEnv("JWT_SECRET"),
-		AccessTokenExpiry:     accessTokenExpiry,
-		RefreshTokenExpiry:    refreshTokenExpiry,
-		Platform:              getEnv("PLATFORM"),
-		S3BucketRegion:        getEnv("S3_BUCKET_REGION"),
-		S3PresignedLinkExpiry: s3PresignedLinkExpiry,
-		S3MaxDataSize:         int64(52_428_800), // 50 MB maximum
-		S3Bucket:              getEnv("S3_BUCKET"),
-		UserIDHashSalt:        getEnv("USERID_HASHING_SALT"),
+		Port:                     getEnv("PORT"),
+		DbURL:                    getEnv("DB"),
+		JWTSecret:                getEnv("JWT_SECRET"),
+		AccessTokenExpiry:        accessTokenExpiry,
+		RefreshTokenExpiry:       refreshTokenExpiry,
+		Platform:                 getEnv("PLATFORM"),
+		S3BucketRegion:           getEnv("S3_BUCKET_REGION"),
+		S3PresignedLinkExpiry:    s3PresignedLinkExpiry,
+		S3PerFileMaxDataSize:     int64(52_428_800), // 50 MB maximum
+		S3Bucket:                 getEnv("S3_BUCKET"),
+		UserIDHashSalt:           getEnv("USERID_HASHING_SALT"),
+		S3GlobalQuotaLimit:       int64(20_000_000_000), // 20 GB maximum
+		S3UserSpecificQuotaLimit: int64(1_000_000_000),  // 1 GB maximum
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -96,8 +100,14 @@ func (c *Config) Validate() error {
 	}
 
 	// Validate S3 byte limits
-	if c.S3MaxDataSize <= 0 {
+	if c.S3PerFileMaxDataSize <= 0 {
 		return fmt.Errorf("S3_MAX_DATA_SIZE must be positive")
+	}
+	if c.S3GlobalQuotaLimit <= 0 {
+		return fmt.Errorf("S3_GLOBAL_QUOTA_LIMIT must be positive")
+	}
+	if c.S3UserSpecificQuotaLimit <= 0 {
+		return fmt.Errorf("S3_USER_SPECIFIC_QUOTA_LIMIT must be positive")
 	}
 
 	return nil

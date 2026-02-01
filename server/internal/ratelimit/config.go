@@ -59,10 +59,10 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 		HealthzGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
 
 		// Auth (Register/Login/DeleteAccount):
-		// Global: 10 per second.
-		// IP: 1 request every 5 seconds.
+		// Global: 5 per second.
+		// IP: 3 request every 60 seconds.
 		AuthGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-		AuthIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(0.1), 2),
+		AuthIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(3.0/60.0), 2),
 
 		// Token (Refresh/Revoke):
 		// Frequent but lightweight.
@@ -72,19 +72,19 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 		// PRIVATE (S3 / DB INTENSIVE)
 
 		// Upload (Presign/Complete):
-		// Global: 10 uploads/sec.
+		// Global: 5 uploads/sec.
 		// User: 1 upload every 2 seconds.
 		UploadGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
 		UploadUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(0.2), 3),
 
 		// List (GetAllFiles, ResolveMatches):
-		// Global: 50/sec (SQLite reads are very fast).
+		// Global: 40/sec (SQLite reads are very fast).
 		// User: 5/sec.
 		ListGlobalLimiter: rate.NewLimiter(rate.Limit(40), 80),
 		ListUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(5), 10),
 
 		// FileMeta (Detail, Salt, Hash, Delete):
-		// Global: 30/sec.
+		// Global: 20/sec.
 		// User: 10/sec.
 		FileMetaGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
 		FileMetaUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(2), 5),

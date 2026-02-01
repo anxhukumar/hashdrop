@@ -13,8 +13,20 @@ import (
 // Create Data Encryption Key for vault user and no-vault users and also generate user relevant errors
 func ObtainFileEncryptionKey(noVault, verbose bool) (fileDEK []byte, fileSalt []byte, err error) {
 
-	if noVault {
+	if !noVault {
+		// If vault is being used
+		var err error
 
+		fileDEK, err = GenerateRandomDEK()
+		if err != nil {
+			if verbose {
+				return nil, nil, fmt.Errorf("generate random key: %w", err)
+			}
+			return nil, nil, errors.New("error generating random key (use --verbose for details)")
+		}
+
+	} else {
+		// If vault is not being used
 		ui.PrintNoVaultWarning()
 		fmt.Scanln() // waits until Enter is pressed to continue
 		for {
@@ -54,17 +66,6 @@ func ObtainFileEncryptionKey(noVault, verbose bool) (fileDEK []byte, fileSalt []
 			}
 
 			break
-		}
-
-	} else {
-		var err error
-
-		fileDEK, err = GenerateRandomDEK()
-		if err != nil {
-			if verbose {
-				return nil, nil, fmt.Errorf("generate random key: %w", err)
-			}
-			return nil, nil, errors.New("error generating random key (use --verbose for details)")
 		}
 	}
 
