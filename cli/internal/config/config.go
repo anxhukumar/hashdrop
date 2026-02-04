@@ -41,6 +41,7 @@ const (
 	DeleteFileEndpoint            = "/api/files"
 	ResolveFileIDConflictEndpoint = "/api/files/resolve"
 	DeleteUserEndpoint            = "/api/user"
+	DownloadFileEndpoint          = "/api/files/download/"
 
 	// ================================
 	// Cryptography — Argon2 Parameters
@@ -52,9 +53,4 @@ const (
 	ArgonMemory  = 64 * 1024 // memory cost (KB) → 64MB
 	ArgonThreads = 1         // parallelism
 	ArgonKeyLen  = 32        // derived key length (bytes)
-
-	// ================================
-	// DOWNLOAD URL PREFIX
-	// ================================
-	UrlPrefix = "https://cdn.hashdrop.dev/"
 )
