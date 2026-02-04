@@ -14,7 +14,6 @@ func ValidateGlobalS3BucketStorageQuota(ctx context.Context, queries *database.Q
 		return false, err
 	}
 
-	// Check if the total bytes are within specified limits
 	if totalBytes < globalLimit {
 		return true, nil
 	}
@@ -29,7 +28,6 @@ func ValidateUserS3BucketStorageQuota(ctx context.Context, queries *database.Que
 		return false, err
 	}
 
-	// Check if the total bytes are within specified limits
 	if totalBytes < userLimit {
 		return true, nil
 	}

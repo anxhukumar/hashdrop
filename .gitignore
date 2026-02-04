@@ -56,3 +56,9 @@ tmp/
 
 # Todo notes
 TODO.txt
+
+# Private keys
+*.pem
+
+# Secrets directory
+**/secrets/

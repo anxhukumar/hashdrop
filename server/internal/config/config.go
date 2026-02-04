@@ -22,12 +22,15 @@ type Config struct {
 	UserIDHashSalt           string
 	S3GlobalQuotaLimit       int64
 	S3UserSpecificQuotaLimit int64
+	CloudfrontURLPrefix      string
+	CloudfrontKeyPairID      string
+	CloudfrontPrivateKeyPath string
 }
 
 // Load environment variables and return a config struct
 func LoadConfig() (*Config, error) {
 
-	godotenv.Load()
+	godotenv.Load("secrets/.env")
 
 	// Parse durations
 	accessTokenExpiry, err := time.ParseDuration(getEnv("JWT_ACCESS_TOKEN_EXPIRY"))
@@ -59,6 +62,9 @@ func LoadConfig() (*Config, error) {
 		UserIDHashSalt:           getEnv("USERID_HASHING_SALT"),
 		S3GlobalQuotaLimit:       int64(20_000_000_000), // 20 GB maximum
 		S3UserSpecificQuotaLimit: int64(1_000_000_000),  // 1 GB maximum
+		CloudfrontURLPrefix:      getEnv("CLOUDFRONT_URL_PREFIX"),
+		CloudfrontKeyPairID:      getEnv("CLOUDFRONT_KEY_PAIR_ID"),
+		CloudfrontPrivateKeyPath: getEnv("CLOUDFRONT_PRIVATE_KEY_PATH"),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -73,13 +79,16 @@ func (c *Config) Validate() error {
 
 	// Maps to each port value for error messages
 	checks := map[string]string{
-		"PORT":                c.Port,
-		"DB":                  c.DbURL,
-		"JWT_SECRET":          c.JWTSecret,
-		"PLATFORM":            c.Platform,
-		"S3_BUCKET_REGION":    c.S3BucketRegion,
-		"S3_BUCKET":           c.S3Bucket,
-		"USERID_HASHING_SALT": c.UserIDHashSalt,
+		"PORT":                        c.Port,
+		"DB":                          c.DbURL,
+		"JWT_SECRET":                  c.JWTSecret,
+		"PLATFORM":                    c.Platform,
+		"S3_BUCKET_REGION":            c.S3BucketRegion,
+		"S3_BUCKET":                   c.S3Bucket,
+		"USERID_HASHING_SALT":         c.UserIDHashSalt,
+		"CLOUDFRONT_URL_PREFIX":       c.CloudfrontURLPrefix,
+		"CLOUDFRONT_KEY_PAIR_ID":      c.CloudfrontKeyPairID,
+		"CLOUDFRONT_PRIVATE_KEY_PATH": c.CloudfrontPrivateKeyPath,
 	}
 
 	for name, value := range checks {
