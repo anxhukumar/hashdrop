@@ -16,3 +16,7 @@ sql:
             go_type: "github.com/google/uuid.UUID"
           - column: "files.user_id"
             go_type: "github.com/google/uuid.UUID"
+          - column: "download_attempts_count.id"
+            go_type: "github.com/google/uuid.UUID"
+          - column: "download_attempts_count.file_id"
+            go_type: "github.com/google/uuid.UUID"
