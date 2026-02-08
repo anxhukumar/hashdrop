@@ -27,6 +27,7 @@ type Config struct {
 	CloudfrontKeyPairID       string
 	CloudfrontPrivateKeyPath  string
 	DailyPerFileDownloadLimit int
+	OtpHashingSecret          string
 }
 
 // Load environment variables and return a config struct
@@ -74,6 +75,7 @@ func LoadConfig() (*Config, error) {
 		CloudfrontKeyPairID:       getEnv("CLOUDFRONT_KEY_PAIR_ID"),
 		CloudfrontPrivateKeyPath:  getEnv("CLOUDFRONT_PRIVATE_KEY_PATH"),
 		DailyPerFileDownloadLimit: dailyPerFileDownloadLimitInt,
+		OtpHashingSecret:          getEnv("OTP_HASHING_SECRET"),
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -99,6 +101,7 @@ func (c *Config) Validate() error {
 		"CLOUDFRONT_KEY_PAIR_ID":        c.CloudfrontKeyPairID,
 		"CLOUDFRONT_PRIVATE_KEY_PATH":   c.CloudfrontPrivateKeyPath,
 		"DAILY_PER_FILE_DOWNLOAD_LIMIT": getEnv("DAILY_PER_FILE_DOWNLOAD_LIMIT"),
+		"OTP_HASHING_SECRET":            c.OtpHashingSecret,
 	}
 
 	for name, value := range checks {

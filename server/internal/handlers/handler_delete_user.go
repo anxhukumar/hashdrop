@@ -18,8 +18,8 @@ func (s *Server) HandlerDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if user is registered and get account details
-	userData, err := s.Store.Queries.GetUserByEmail(r.Context(), userLoginIncoming.Email)
+	// Check if user is registered & verified to get account details
+	userData, err := s.Store.Queries.GetVerifiedUserByEmail(r.Context(), userLoginIncoming.Email)
 	if err != nil {
 		RespondWithError(w, s.Logger, "Invalid username or password", err, http.StatusUnauthorized)
 		return

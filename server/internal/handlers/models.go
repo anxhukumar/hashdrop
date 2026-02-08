@@ -21,6 +21,12 @@ type UserOutgoing struct {
 	Email     string    `json:"email"`
 }
 
+// Incoming: receive account verification data
+type VerifyRequest struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
+}
+
 // Incoming: Login struct to receive from the user
 type UserLoginIncoming struct {
 	Email    string `json:"email"`
