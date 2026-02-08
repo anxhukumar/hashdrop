@@ -26,10 +26,10 @@ func main() {
 		log.Fatalf("Failed to load configuration: %s", err)
 	}
 
-	// Initialize S3
-	s3Config, s3Client, err := aws.InitS3(context.Background(), cfg.S3BucketRegion)
+	// Initialize aws
+	awsConfig, s3Client, sesClient, err := aws.InitAWS(context.Background(), cfg.S3BucketRegion)
 	if err != nil {
-		log.Fatalf("Failed to initialize s3: %s", err)
+		log.Fatalf("Failed to initialize aws: %s", err)
 	}
 
 	// Configure database connection
@@ -50,7 +50,7 @@ func main() {
 
 	// Initialize dependencies
 	store := store.NewStore(dbConn)
-	server := handlers.NewServer(store, cfg, s3Config, s3Client)
+	server := handlers.NewServer(store, cfg, awsConfig, s3Client, sesClient)
 
 	// Rate limiting
 	ctx, cancel := context.WithCancel(context.Background())

@@ -29,6 +29,7 @@ const (
 	// ================================
 	BaseURL                       = "http://localhost:8080"
 	RegisterEndpoint              = "/api/user/register"
+	VerifyUserEndpoint            = "/api/user/verify"
 	LoginEndpoint                 = "/api/user/login"
 	RefreshTokenEndpoint          = "/api/token/refresh"
 	RevokeRefreshTokenEndpoint    = "/api/token/revoke"

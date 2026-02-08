@@ -5,31 +5,13 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 )
 
 const fromAddr = "noreply@hashdrop.dev"
 
-type Sender struct {
-	client   *sesv2.Client
-	fromAddr string
-}
-
-func NewSender(ctx context.Context) (*Sender, error) {
-	cfg, err := awsconfig.LoadDefaultConfig(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Sender{
-		client:   sesv2.NewFromConfig(cfg),
-		fromAddr: fromAddr,
-	}, nil
-}
-
-func (s *Sender) SendOTP(ctx context.Context, toEmail, otp string) error {
+func SendOTP(ctx context.Context, toEmail, otp string, sesClient *sesv2.Client) error {
 	subject := "Your Hashdrop OTP"
 	bodyText := fmt.Sprintf(
 		"Hi,\n\n"+
@@ -45,7 +27,7 @@ func (s *Sender) SendOTP(ctx context.Context, toEmail, otp string) error {
 	)
 
 	input := &sesv2.SendEmailInput{
-		FromEmailAddress: aws.String(s.fromAddr),
+		FromEmailAddress: aws.String(fromAddr),
 		Destination: &types.Destination{
 			ToAddresses: []string{toEmail},
 		},
@@ -65,6 +47,6 @@ func (s *Sender) SendOTP(ctx context.Context, toEmail, otp string) error {
 		},
 	}
 
-	_, err := s.client.SendEmail(ctx, input)
+	_, err := sesClient.SendEmail(ctx, input)
 	return err
 }

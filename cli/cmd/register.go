@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/anxhukumar/hashdrop/cli/internal/api"
 	"github.com/anxhukumar/hashdrop/cli/internal/auth"
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/prompt"
@@ -60,9 +61,46 @@ Once registration succeeds, you can log in and start uploading encrypted files.
 			return errors.New("registration failed (use --verbose for details)")
 		}
 
-		fmt.Println("✓ Registration successful")
+		// Confirm otp to verify account
+		for {
+			otpInput, err := prompt.ReadLine("Enter your email verification code: ")
+			if err != nil {
+				return err
+			}
 
-		return nil
+			verifyRequestParams := &struct {
+				Email string `json:"email"`
+				OTP   string `json:"otp"`
+			}{
+				Email: email,
+				OTP:   otpInput,
+			}
+
+			status, err := api.PatchJSON(config.VerifyUserEndpoint, verifyRequestParams, nil, "")
+			if err != nil {
+				switch status {
+				case 401:
+					fmt.Println("❌ Invalid verification code. Please try again.")
+					continue
+				case 400:
+					return errors.New("verification code expired. Please register again or request a new code")
+				default:
+					if Verbose {
+						return err
+					}
+					return errors.New("verification failed (use --verbose for details)")
+				}
+			}
+
+			switch status {
+			case 204:
+				fmt.Println("✓ Registration successful")
+				return nil
+			default:
+				return fmt.Errorf("unexpected server response: %d", status)
+			}
+
+		}
 
 	},
 }

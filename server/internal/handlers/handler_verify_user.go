@@ -86,14 +86,7 @@ func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Delete otp from db once its verified
 	err = s.Store.Queries.DeleteOtpByUserID(r.Context(), userData.ID)
 	if err != nil {
-		RespondWithError(
-			w,
-			s.Logger,
-			"",
-			fmt.Errorf("Error deleting user otp after verification: %w", err),
-			http.StatusNoContent,
-		)
-		return
+		s.Logger.Printf("warning: failed to delete otp: %v", err)
 	}
 
 	w.WriteHeader(http.StatusNoContent)

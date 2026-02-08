@@ -5,6 +5,7 @@ import (
 
 	"github.com/anxhukumar/hashdrop/server/internal/auth"
 	"github.com/anxhukumar/hashdrop/server/internal/database"
+	"github.com/anxhukumar/hashdrop/server/internal/otp"
 	"github.com/google/uuid"
 )
 
@@ -33,6 +34,19 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	userDbResponse, err := s.Store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
 		RespondWithError(w, s.Logger, "Error creating new user", err, http.StatusInternalServerError)
+		return
+	}
+
+	// Generate and save otp in database and email it to the users email address
+	err = otp.GenerateAndEmailOtp(r.Context(), userDb.ID, userDb.Email, s.Cfg.OtpHashingSecret, s.Store.Queries, s.SESClient)
+	if err != nil {
+		RespondWithError(
+			w,
+			s.Logger,
+			"Could not send verification email. Please try again later",
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
