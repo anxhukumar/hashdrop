@@ -3,18 +3,27 @@ package handlers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/server/internal/otp"
 )
 
 func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_verify_user")
 
 	// Get decoded incoming user verification data
 	var userVerificationData VerifyRequest
 	if err := DecodeJson(r, &userVerificationData); err != nil {
-		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		msgToDev := "user posted invalid json data"
+		msgToClient := "invalid JSON payload"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -22,62 +31,83 @@ func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
 	userData, err := s.Store.Queries.GetUnverifiedUserByEmail(r.Context(), userVerificationData.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(
+			msgToDev := "account does not exist"
+			msgToClient := "account doesn't exist"
+			RespondWithWarn(
 				w,
-				s.Logger,
-				"Account doesn't exist",
-				errors.New("The account that user is trying to verify doesn't exist"),
-				http.StatusUnauthorized)
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
+				http.StatusUnauthorized,
+			)
 			return
 		}
+		msgToDev := "error fetching unverified user from database"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Error while getting user account",
-			fmt.Errorf("Error fetching users account while verifying: %w", err),
+			logger,
+			msgToDev,
+			err,
 			http.StatusInternalServerError,
 		)
 		return
 	}
+
+	// Attach user_id in logger context
+	logger = logger.With("user_id", userData.ID.String())
 
 	// Get OTP hash of user and compare
 	storedOtpHash, err := s.Store.Queries.GetOtpHash(r.Context(), userData.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(
+			msgToDev := "otp not available or expired"
+			msgToClient := "otp not available or expired"
+			RespondWithWarn(
 				w,
-				s.Logger,
-				"OTP not available or expired",
-				errors.New("The otp user is trying to fetch doesn't exist or is expired"),
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
 				http.StatusBadRequest,
 			)
 			return
 		}
+		msgToDev := "error fetching otp hash from database"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Error while getting otp hash",
-			fmt.Errorf("Error fetching otp hash while verifying user: %w", err),
+			logger,
+			msgToDev,
+			err,
 			http.StatusInternalServerError,
 		)
 		return
-
 	}
 
 	// Validate otp
 	if !otp.VerifyOTP(userVerificationData.OTP, storedOtpHash, s.Cfg.OtpHashingSecret) {
-		RespondWithError(w, s.Logger, "Invalid OTP", nil, http.StatusUnauthorized)
+		msgToDev := "invalid otp provided for user verification"
+		msgToClient := "invalid otp"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			nil,
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
 	// Mark user verified if an email match is found
 	err = s.Store.Queries.MarkUserVerifiedByEmail(r.Context(), userVerificationData.Email)
 	if err != nil {
+		msgToDev := "error marking user as verified in database"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Error verifying account",
-			fmt.Errorf("Error verifying user account: %w", err),
+			logger,
+			msgToDev,
+			err,
 			http.StatusInternalServerError,
 		)
 		return
@@ -86,8 +116,9 @@ func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
 	// Delete otp from db once its verified
 	err = s.Store.Queries.DeleteOtpByUserID(r.Context(), userData.ID)
 	if err != nil {
-		s.Logger.Printf("warning: failed to delete otp: %v", err)
+		logger.Error("failed to delete otp after verification", "err", err)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	logger.Info("user verified successfully")
 }
