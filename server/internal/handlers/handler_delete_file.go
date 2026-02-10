@@ -11,48 +11,86 @@ import (
 )
 
 func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_delete_file")
 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		msgToDev := "user id missing in request context"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			nil,
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
+	// Attach user_id in logger context to enhance logs
+	logger = logger.With("user_id", userID.String())
 
 	q := r.URL.Query()
-	file_id := q.Get("id")
+	fileID := q.Get("id")
 
-	if len(file_id) == 0 {
-		RespondWithError(w,
-			s.Logger,
-			"Missing file id in query parameter",
+	if len(fileID) == 0 {
+		msgToDev := "file id missing in query parameter"
+		msgToClient := "missing file id in query parameter"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
 			errors.New("file id missing in query"),
-			http.StatusBadRequest)
+			http.StatusBadRequest,
+		)
 		return
 	}
+
+	// Attach file_id in logger context to enhance logs
+	logger = logger.With("file_id", fileID)
 
 	// Get s3 key of file and delete it first from the bucket
 	ObjectKey, err := s.Store.Queries.GetS3KeyFromFileID(
 		r.Context(),
 		database.GetS3KeyFromFileIDParams{
 			UserID:  userID,
-			Column2: file_id + "%",
+			Column2: fileID + "%",
 		},
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(w, s.Logger, "File not found", err, http.StatusNotFound)
+			msgToDev := "file not found in database for given file id"
+			msgToClient := "file not found"
+			RespondWithWarn(
+				w,
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
+				http.StatusNotFound,
+			)
 			return
 		}
-		RespondWithError(w, s.Logger, "Error fetching s3 key", err, http.StatusInternalServerError)
+		msgToDev := "error fetching s3 key of file from database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
 	if len(ObjectKey) > 1 {
-		RespondWithError(
+		msgToDev := "file id prefix is ambiguous, multiple files match"
+		msgToClient := "file id is ambiguous"
+		RespondWithWarn(
 			w,
-			s.Logger,
-			"File ID is ambiguous",
+			logger,
+			msgToDev,
+			msgToClient,
 			errors.New("multiple files match this ID prefix"),
 			http.StatusConflict,
 		)
@@ -65,7 +103,14 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 		Key:    aws.String(ObjectKey[0]),
 	})
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error deleting file from s3", err, http.StatusInternalServerError)
+		msgToDev := "error deleting file from s3"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -73,13 +118,21 @@ func (s *Server) HandlerDeleteFile(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		database.DeleteFileFromIdParams{
 			UserID:  userID,
-			Column2: file_id + "%",
+			Column2: fileID + "%",
 		},
 	)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error deleting file", err, http.StatusInternalServerError)
+		msgToDev := "error deleting file record from database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	logger.Info("file deleted successfully")
 }

@@ -35,7 +35,7 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		msgToDev := "error in fetching user_id from the context"
+		msgToDev := "user id missing in request context"
 		RespondWithError(
 			w,
 			logger,
