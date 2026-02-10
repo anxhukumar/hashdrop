@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -13,62 +12,98 @@ import (
 )
 
 func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_generate_presign_link")
 
 	// Get decoded incoming file metadata
 	var FileMetadata FileUploadRequest
 	if err := DecodeJson(r, &FileMetadata); err != nil {
-		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		msgToDev := "user posted invalid json data"
+		msgToClient := "invalid JSON payload"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		msgToDev := "user id missing in request context"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			nil,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
+	// Attach user_id in logger context to enhance logs
+	logger = logger.With("user_id", userID.String())
+
 	// Check if the total space consumed by uploaded files is within limits
 	// Global quota
-	valid, err := storageguard.ValidateGlobalS3BucketStorageQuota(r.Context(), s.Store.Queries, s.Cfg.S3GlobalQuotaLimit)
+	valid, err := storageguard.ValidateGlobalS3BucketStorageQuota(
+		r.Context(),
+		s.Store.Queries,
+		s.Cfg.S3GlobalQuotaLimit,
+	)
 	if err != nil {
+		msgToDev := "error validating global s3 bucket quota"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Internal server error",
-			errors.New("error validating global s3 bucket quota"),
+			logger,
+			msgToDev,
+			err,
 			http.StatusInternalServerError,
 		)
 		return
 	}
 	if !valid {
+		msgToDev := "global storage limit exceeded, uploads temporarily disabled"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Uploads are temporarily disabled due to system storage limits",
-			errors.New("global storage limit exceeded"),
+			logger,
+			msgToDev,
+			nil,
 			http.StatusServiceUnavailable,
 		)
 		return
 	}
+
 	// User specific quota
-	valid, err = storageguard.ValidateUserS3BucketStorageQuota(r.Context(), s.Store.Queries, userID, s.Cfg.S3UserSpecificQuotaLimit)
+	valid, err = storageguard.ValidateUserS3BucketStorageQuota(
+		r.Context(),
+		s.Store.Queries,
+		userID,
+		s.Cfg.S3UserSpecificQuotaLimit,
+	)
 	if err != nil {
+		msgToDev := "error validating user s3 bucket quota"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Internal server error",
-			errors.New("error validating users s3 bucket quota"),
+			logger,
+			msgToDev,
+			err,
 			http.StatusInternalServerError,
 		)
 		return
 	}
 	if !valid {
-		RespondWithError(
+		msgToDev := "user storage limit exceeded"
+		msgToClient := "storage limit reached"
+		RespondWithWarn(
 			w,
-			s.Logger,
-			"Storage limit reached",
-			errors.New("user storage limit exceeded"),
+			logger,
+			msgToDev,
+			msgToClient,
+			nil,
 			http.StatusForbidden,
 		)
 		return
@@ -79,6 +114,9 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 
 	// Generate fileID
 	fileID := uuid.New()
+
+	// Attach file_id in logger context
+	logger = logger.With("file_id", fileID.String())
 
 	// Make object key ("user-<user_id>/<file_id>")
 	s3ObjectKey := fmt.Sprintf("usrh-%s/%s", s3KeyPrefix, fileID.String())
@@ -92,7 +130,14 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		s3ObjectKey,
 	)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error generating presigned put link", err, http.StatusInternalServerError)
+		msgToDev := "error generating presigned put link"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -106,7 +151,14 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	}
 	err = s.Store.Queries.CreatePendingFile(r.Context(), fileData)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error creating file meta data", err, http.StatusInternalServerError)
+		msgToDev := "error creating pending file metadata in database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -117,7 +169,9 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := RespondWithJSON(w, http.StatusOK, resp); err != nil {
-		s.Logger.Println("failed to send response:", err)
+		logger.Error("failed to send response", "err", err)
 		return
 	}
+
+	logger.Info("presigned upload link generated successfully")
 }
