@@ -99,6 +99,4 @@ func (s *Server) HandlerGetDetailedFile(w http.ResponseWriter, r *http.Request) 
 		logger.Error("failed to send response", "err", err)
 		return
 	}
-
-	logger.Info("fetched detailed file information successfully")
 }

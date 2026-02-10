@@ -120,5 +120,4 @@ func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-	logger.Info("user verified successfully")
 }

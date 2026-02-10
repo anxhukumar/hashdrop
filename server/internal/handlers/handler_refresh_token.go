@@ -79,6 +79,4 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to send new access token response", "err", err)
 		return
 	}
-
-	logger.Info("access token refreshed successfully")
 }

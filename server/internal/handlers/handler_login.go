@@ -133,6 +133,4 @@ func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to send login response", "err", err)
 		return
 	}
-
-	logger.Info("user logged in successfully")
 }

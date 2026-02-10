@@ -89,5 +89,4 @@ func (s *Server) HandlerGenerateDownloadLink(w http.ResponseWriter, r *http.Requ
 	}
 
 	http.Redirect(w, r, signedURL, http.StatusSeeOther)
-	logger.Info("generated signed download link and redirected successfully")
 }

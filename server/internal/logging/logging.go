@@ -7,8 +7,7 @@ import (
 
 func NewLogger() *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug, // add minimum level of logs allowed
-		AddSource: true,            // adds file:line automatically
+		Level: slog.LevelDebug, // add minimum level of logs allowed
 	})
 
 	return slog.New(handler)

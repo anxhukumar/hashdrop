@@ -172,6 +172,4 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		logger.Error("failed to send response", "err", err)
 		return
 	}
-
-	logger.Info("presigned upload link generated successfully")
 }
