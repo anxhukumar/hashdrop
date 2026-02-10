@@ -28,9 +28,6 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Attach users email in logger context to enhance logs
-	logger = logger.With("user_email", userIncoming.Email)
-
 	// Get hashed password
 	hashedPassword, err := auth.HashedPassword(userIncoming.Password)
 	if err != nil {
