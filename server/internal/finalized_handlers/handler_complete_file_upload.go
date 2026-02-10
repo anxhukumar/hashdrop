@@ -11,20 +11,43 @@ import (
 )
 
 func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_complete_file_upload")
 
 	// Get decoded incoming file json data
 	var FileUploadMetadata FileUploadMetadata
 	if err := DecodeJson(r, &FileUploadMetadata); err != nil {
-		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		msgToDev := "user posted invalid json data"
+		msgToClient := "invalid JSON payload"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
+
+	// Attach fileID in logger context to enhance logs
+	logger = logger.With("file_id", FileUploadMetadata.FileID)
 
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		msgToDev := "error in fetching user_id from the context"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			nil,
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
+	// Attach UserId in logger context to enhance logs
+	logger = logger.With("user_id", userID.String())
 
 	// Get metadata of the uploaded file
 
@@ -35,10 +58,26 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			RespondWithError(w, s.Logger, "File not found", err, http.StatusNotFound)
+			msgToDev := "the file that the user is trying to verify does not exist in database"
+			msgToClient := "file not found"
+			RespondWithWarn(
+				w,
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
+				http.StatusNotFound,
+			)
 			return
 		}
-		RespondWithError(w, s.Logger, "Error fetching S3ObjectKey from database", err, http.StatusInternalServerError)
+		msgToDev := "error fetching S3ObjectKey from database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -47,7 +86,14 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 		Key:    aws.String(ObjectKey),
 	})
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error fetching object metadata from s3", err, http.StatusInternalServerError)
+		msgToDev := "error fetching object metadata from s3"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -64,12 +110,28 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 			Status: "failed",
 			ID:     FileUploadMetadata.FileID,
 		}); err != nil {
-			RespondWithError(w, s.Logger, "Error marking file as failed", err, http.StatusInternalServerError)
+			msgToDev := "error marking file upload status as failed"
+			RespondWithError(
+				w,
+				logger,
+				msgToDev,
+				err,
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
-		// Respond with error
-		RespondWithError(w, s.Logger, "File size exceeds the allowed limit", err, http.StatusRequestEntityTooLarge)
+		msgToDev := "the file that the user tried verifying is above the allowed size limit"
+		msgToClient := "file size exceeds the allowed limit"
+		logger = logger.With("file_size", verifiedFileSize)
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			nil,
+			http.StatusRequestEntityTooLarge,
+		)
 		return
 	}
 
@@ -107,7 +169,14 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 		UserID: userID,
 	}
 	if err := s.Store.Queries.UpdateUploadedFile(r.Context(), fileData); err != nil {
-		RespondWithError(w, s.Logger, "Error updating file meta data", err, http.StatusInternalServerError)
+		msgToDev := "error updating file meta data"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -118,5 +187,7 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 			S3ObjectKey:      ObjectKey,
 			UploadedFileSize: verifiedFileSize,
 		})
+
+	logger.Info("uploaded file verified successfully")
 
 }

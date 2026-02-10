@@ -10,18 +10,40 @@ import (
 )
 
 func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_create_user")
 
 	// Get decoded incoming user json data
 	var userIncoming UserIncoming
 	if err := DecodeJson(r, &userIncoming); err != nil {
-		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		msgToDev := "user posted invalid json data"
+		msgToClient := "invalid JSON payload"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
+
+	// Attach users email in logger context to enhance logs
+	logger = logger.With("user_email", userIncoming.Email)
 
 	// Get hashed password
 	hashedPassword, err := auth.HashedPassword(userIncoming.Password)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Invalid password or password too short", err, http.StatusBadRequest)
+		msgToDev := "user inserted password is invalid or password is too short"
+		msgToClient := "invalid password"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -33,17 +55,35 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userDbResponse, err := s.Store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error creating new user", err, http.StatusInternalServerError)
+		msgToDev := "error creating new user in database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
+	// Attach user_id in logger context to enhance logs
+	logger = logger.With("user_id", userDbResponse.ID.String())
+
 	// Generate and save otp in database and email it to the users email address
-	err = otp.GenerateAndEmailOtp(r.Context(), userDb.ID, userDb.Email, s.Cfg.OtpHashingSecret, s.Store.Queries, s.SESClient)
+	err = otp.GenerateAndEmailOtp(
+		r.Context(),
+		userDb.ID,
+		userDb.Email,
+		s.Cfg.OtpHashingSecret,
+		s.Store.Queries,
+		s.SESClient,
+	)
 	if err != nil {
+		msgToDev := "error generating or sending otp to users email"
 		RespondWithError(
 			w,
-			s.Logger,
-			"Could not send verification email. Please try again later",
+			logger,
+			msgToDev,
 			err,
 			http.StatusInternalServerError,
 		)
@@ -59,7 +99,9 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := RespondWithJSON(w, http.StatusCreated, UserOutgoing); err != nil {
-		s.Logger.Println("failed to send response:", err)
+		logger.Error("failed to send response", "err", err)
 		return
 	}
+
+	logger.Info("user created successfully and verification email sent")
 }
