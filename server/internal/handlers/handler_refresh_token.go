@@ -7,11 +7,21 @@ import (
 )
 
 func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_refresh_token")
 
 	// Get decoded refresh token from client
 	var refreshToken RefreshToken
 	if err := DecodeJson(r, &refreshToken); err != nil {
-		RespondWithError(w, s.Logger, "Invalid JSON payload", err, http.StatusBadRequest)
+		msgToDev := "user posted invalid json data"
+		msgToClient := "invalid JSON payload"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			err,
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -20,19 +30,44 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Check if this is a no rows error or actual db error
 		if errors.Is(err, sql.ErrNoRows) {
-			// Token doesn't exist, is revoked, or is expired
-			RespondWithError(w, s.Logger, "Invalid or expired refresh token", err, http.StatusUnauthorized)
+			msgToDev := "invalid, expired, or revoked refresh token"
+			msgToClient := "invalid or expired refresh token"
+			RespondWithWarn(
+				w,
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
+				http.StatusUnauthorized,
+			)
 			return
 		}
 		// Actual db error
-		RespondWithError(w, s.Logger, "Database error", err, http.StatusInternalServerError)
+		msgToDev := "database error while fetching user from refresh token"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
+	// Attach user_id in logger context
+	logger = logger.With("user_id", user.ID.String())
 
 	// Get fresh access token
 	newJwtToken, err := GetJWTToken(user, s.Cfg.JWTSecret, s.Cfg.AccessTokenExpiry)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error getting new access token", err, http.StatusInternalServerError)
+		msgToDev := "error getting new access token"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -41,7 +76,9 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 		AccessToken: newJwtToken,
 	}
 	if err := RespondWithJSON(w, http.StatusOK, res); err != nil {
-		s.Logger.Println("failed to send new access token response:", err)
+		logger.Error("failed to send new access token response", "err", err)
 		return
 	}
+
+	logger.Info("access token refreshed successfully")
 }
