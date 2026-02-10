@@ -1,50 +1,79 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/server/internal/database"
 )
 
 func (s *Server) HandlerResolveFileMatches(w http.ResponseWriter, r *http.Request) {
+	logger := s.Logger.With("handler", "handler_resolve_file_matches")
+
 	// Get userID from context
 	userID, ok := UserIDFromContext(r.Context())
 	if !ok {
-		RespondWithError(w, s.Logger, "Internal server error", errors.New("user id missing in context"), http.StatusInternalServerError)
+		msgToDev := "user id missing in request context"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			nil,
+			http.StatusInternalServerError,
+		)
 		return
 	}
+
+	// Attach user_id in logger context
+	logger = logger.With("user_id", userID.String())
 
 	q := r.URL.Query()
-	file_id := q.Get("id")
+	fileID := q.Get("id")
 
-	if len(file_id) == 0 {
-		RespondWithError(w,
-			s.Logger,
-			"Missing file id in query parameter",
-			errors.New("file id missing in query"),
-			http.StatusBadRequest)
+	if len(fileID) == 0 {
+		msgToDev := "file id missing in query parameter"
+		msgToClient := "missing file id in query parameter"
+		RespondWithWarn(
+			w,
+			logger,
+			msgToDev,
+			msgToClient,
+			nil,
+			http.StatusBadRequest,
+		)
 		return
 	}
+
+	// Attach file_id in logger context
+	logger = logger.With("file_id", fileID)
 
 	dbFileData, err := s.Store.Queries.CheckShortFileIDConflict(
 		r.Context(),
 		database.CheckShortFileIDConflictParams{
 			UserID:  userID,
-			Column2: file_id + "%",
+			Column2: fileID + "%",
 		},
 	)
 	if err != nil {
-		RespondWithError(w, s.Logger, "Error fetching file data", err, http.StatusInternalServerError)
+		msgToDev := "error fetching file conflict matches from database"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
 	if len(dbFileData) == 0 {
-		RespondWithError(
+		msgToDev := "no files found matching given file id prefix"
+		msgToClient := "no files found"
+		RespondWithWarn(
 			w,
-			s.Logger,
-			"no files found",
-			errors.New("no matches found for the file id"),
+			logger,
+			msgToDev,
+			msgToClient,
+			nil,
 			http.StatusNotFound,
 		)
 		return
@@ -60,5 +89,10 @@ func (s *Server) HandlerResolveFileMatches(w http.ResponseWriter, r *http.Reques
 		)
 	}
 
-	RespondWithJSON(w, http.StatusOK, resp)
+	if err := RespondWithJSON(w, http.StatusOK, resp); err != nil {
+		logger.Error("failed to send response", "err", err)
+		return
+	}
+
+	logger.Info("resolved file id conflict matches successfully")
 }
