@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"github.com/anxhukumar/hashdrop/server/internal/database"
+	testutil "github.com/anxhukumar/hashdrop/server/internal/test_util"
+
 	"github.com/google/uuid"
 )
 
 func TestValidateDownloadAttempts(t *testing.T) {
 	ctx := context.Background()
 
-	db := setupTestDB(t)
+	db := testutil.SetupTestDB(t)
 	queries := database.New(db)
 
 	fileID := uuid.New()
