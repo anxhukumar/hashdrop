@@ -1,4 +1,4 @@
--- +goose UP
+-- +goose Up
 CREATE TABLE download_attempts_count (
     id TEXT PRIMARY KEY,
     file_id TEXT NOT NULL,

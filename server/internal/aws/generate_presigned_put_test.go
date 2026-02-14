@@ -77,13 +77,8 @@ func TestGeneratePresignedPUT(t *testing.T) {
 				t.Fatalf("GeneratePresignedPUT() | error = %v, wantErr = %v", err, tt.wantErr)
 			}
 
-			// If error was expected, skip further validations
-			if tt.wantErr {
-				return
-			}
-
 			// Test if url is non-empty
-			if len(s3Response.URL) < 1 {
+			if !tt.wantErr && len(s3Response.URL) < 1 {
 				t.Error("GeneratePresignedPUT() returned empty URL")
 			}
 
