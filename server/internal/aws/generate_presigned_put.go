@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -19,6 +20,10 @@ func GeneratePresignedPUT(
 	bucket string,
 	key string,
 ) (*S3PutResponse, error) {
+
+	if client == nil {
+		return nil, fmt.Errorf("s3 client is nil")
+	}
 
 	presigner := s3.NewPresignClient(client)
 
