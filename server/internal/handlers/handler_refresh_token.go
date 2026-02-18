@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
 )
 
 func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -25,13 +27,16 @@ func (s *Server) HandlerRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hash refresh token
+	hashedRefreshToken := auth.HashRefreshToken(refreshToken.RefreshToken, []byte(s.Cfg.RefreshTokenHashingSecretV1))
+
 	// Get userdata from refresh token
-	user, err := s.Store.Queries.GetUserFromRefreshToken(r.Context(), refreshToken.RefreshToken)
+	user, err := s.Store.Queries.GetUserFromRefreshToken(r.Context(), hashedRefreshToken)
 	if err != nil {
 		// Check if this is a no rows error or actual db error
 		if errors.Is(err, sql.ErrNoRows) {
 			msgToDev := "invalid, expired, or revoked refresh token"
-			msgToClient := "invalid or expired refresh token"
+			msgToClient := "invalid or expired refresh token, try logging in again"
 			RespondWithWarn(
 				w,
 				logger,

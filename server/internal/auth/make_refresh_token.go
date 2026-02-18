@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 )
@@ -17,4 +19,11 @@ func MakeRefreshToken() (string, error) {
 
 	keyStr := hex.EncodeToString(key)
 	return keyStr, nil
+}
+
+// HashRefreshToken hashes token using a secret key
+func HashRefreshToken(token string, secret []byte) string {
+	h := hmac.New(sha256.New, secret)
+	h.Write([]byte(token))
+	return hex.EncodeToString(h.Sum(nil))
 }

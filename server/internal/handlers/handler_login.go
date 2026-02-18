@@ -102,15 +102,18 @@ func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hash refresh token
+	hashedRefreshToken := auth.HashRefreshToken(refreshToken, []byte(s.Cfg.RefreshTokenHashingSecretV1))
+
 	// Send the refresh token to database
 	expiry := time.Now().Add(s.Cfg.RefreshTokenExpiry)
 
 	refreshTokenParams := database.CreateRefreshTokenParams{
-		Token:     refreshToken,
+		Token:     hashedRefreshToken, // Store hashed refresh token
 		UserID:    userData.ID,
 		ExpiresAt: expiry,
 	}
-	refreshTokenData, err := s.Store.Queries.CreateRefreshToken(r.Context(), refreshTokenParams)
+	_, err = s.Store.Queries.CreateRefreshToken(r.Context(), refreshTokenParams)
 	if err != nil {
 		msgToDev := "error creating refresh token in database"
 		RespondWithError(
@@ -124,9 +127,10 @@ func (s *Server) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return output to the client
+	// Send raw refresh token to client and not the hashed version
 	loginResponse := UserLoginOutgoing{
 		AccessToken:  jwtToken,
-		RefreshToken: refreshTokenData.Token,
+		RefreshToken: refreshToken,
 	}
 
 	if err := RespondWithJSON(w, http.StatusOK, loginResponse); err != nil {
