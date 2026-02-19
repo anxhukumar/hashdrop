@@ -42,7 +42,7 @@ const (
 	DeleteFileEndpoint            = "/api/files"
 	ResolveFileIDConflictEndpoint = "/api/files/resolve"
 	DeleteUserEndpoint            = "/api/user"
-	DownloadFileEndpoint          = "/api/files/download/"
+	DownloadFileEndpoint          = "/files/download/"
 
 	// ================================
 	// Cryptography — Argon2 Parameters
