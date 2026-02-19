@@ -1,3 +1,4 @@
+> Before proceeding, make sure you have the Hashdrop CLI installed. See the [Installation guide](./installation.md) to get set up.
 # Quickstart
 
 This guide walks you through the core Hashdrop CLI workflows — from creating an account to uploading, sharing, and decrypting files.
