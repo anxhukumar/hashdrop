@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/server/internal/auth"
 	"github.com/anxhukumar/hashdrop/server/internal/database"
 	"github.com/anxhukumar/hashdrop/server/internal/otp"
 	"github.com/google/uuid"
+	"github.com/mattn/go-sqlite3"
 )
 
 func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -52,6 +54,26 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userDbResponse, err := s.Store.Queries.CreateNewUser(r.Context(), userDb)
 	if err != nil {
+		// Error when same user tries to register twice
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
+				// Email already exists
+				msgToDev := "email already exists (unique constraint hit)"
+				msgToClient := "an account with this email already exists"
+
+				RespondWithWarn(
+					w,
+					logger,
+					msgToDev,
+					msgToClient,
+					err,
+					http.StatusConflict,
+				)
+				return
+			}
+		}
+
 		msgToDev := "error creating new user in database"
 		RespondWithError(
 			w,
