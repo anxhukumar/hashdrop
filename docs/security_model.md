@@ -18,8 +18,6 @@ A random 32-byte DEK is generated automatically. You don't need to think about k
 **No-vault mode**
 You provide a passphrase and take responsibility for managing it. Hashdrop does not trust the passphrase alone for key strength, so a random 16-byte salt is generated and used with Argon2 to derive the final DEK. The salt is stored in the database so the key can be re-derived later for decryption.
 
-> For a detailed walkthrough of the upload flow, see [Uploading Files](./uploading.md).
-
 ---
 
 ## File encryption
@@ -65,3 +63,5 @@ Whenever you upload a new file or decrypt a file whose key lives in the vault, y
 | Encrypted file blob (S3) | Plaintext file data |
 | DEK salt (no-vault mode) | Raw DEK (vault mode) |
 | File metadata and integrity hash | Vault passphrase |
+
+> For a detailed walkthrough of the upload flow, see [Uploading Files](./uploading.md).
