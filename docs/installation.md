@@ -80,4 +80,4 @@ Then try `hashdrop --help` again.
 
 Run `hashdrop auth register` to create an account, then `hashdrop auth login` to authenticate.
 
-You're all set — head over to the [Quickstart](./quickstart.md) to upload your first file.
+You're all set — head over to the [Usage](./usage.md) to upload your first file.
