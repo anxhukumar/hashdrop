@@ -23,9 +23,8 @@ You provide a passphrase and take responsibility for managing it. Hashdrop does 
 ## File encryption
 
 Before encrypting, Hashdrop computes a hash of the plaintext bytes for later integrity verification. The file is then encrypted in chunks using **AES-GCM**. Each chunk is written in the format:
-```
-[nonce][ciphertext length][ciphertext]
-```
+
+`[nonce][ciphertext length][ciphertext]`
 
 This structure makes the chunk boundaries unambiguous during decryption. AES-GCM also provides built-in integrity guarantees at the cipher level, and the plaintext hash provides an additional application-level check.
 
@@ -38,9 +37,8 @@ Only the encrypted blob is uploaded to S3.
 After a successful upload in vault mode, the DEK is stored in a local encrypted vault at `~/.hashdrop/vault.enc`. The vault is a hashmap of file IDs to their base64-encoded DEKs.
 
 The vault itself is protected by a passphrase you provide. That passphrase is processed using a random 16-byte salt and Argon2 to derive the vault encryption key, and the vault is encrypted with AES-GCM in the format:
-```
-[nonce][ciphertext]
-```
+
+`[nonce][ciphertext]`
 
 The salt and other vault metadata are stored separately at `~/.hashdrop/vault_meta.json`. Even if `vault.enc` is stolen, it cannot be read without your vault passphrase.
 
