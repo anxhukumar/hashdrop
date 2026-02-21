@@ -11,6 +11,11 @@ import (
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
 )
 
+// These are byte values to predict chunk size
+const nonceSizeVal = 12
+const gcmTagVal = 16
+const lenFieldVal = 4
+
 // Encrypts and uploads file on the fly
 func UploadFileToS3(
 	ctx context.Context,
@@ -46,9 +51,9 @@ func UploadFileToS3(
 	plainSize := info.Size()
 
 	const chunkSize = config.FileStreamingChunkSize
-	nonceSize := 12
-	gcmTag := 16
-	lenField := 4
+	nonceSize := nonceSizeVal
+	gcmTag := gcmTagVal
+	lenField := lenFieldVal
 
 	numChunks := (plainSize + chunkSize - 1) / chunkSize
 	overheadPerChunk := int64(nonceSize + lenField + gcmTag)
