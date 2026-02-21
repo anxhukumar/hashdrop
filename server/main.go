@@ -21,13 +21,10 @@ import (
 func main() {
 
 	// Load configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %s", err)
-	}
+	cfg := config.LoadConfig()
 
 	// Initialize aws
-	awsConfig, s3Client, sesClient, err := aws.InitAWS(context.Background(), cfg.S3BucketRegion)
+	awsConfig, s3Client, sesClient, err := aws.InitAWS(context.Background(), cfg.AwsRegion)
 	if err != nil {
 		log.Fatalf("Failed to initialize aws: %s", err)
 	}

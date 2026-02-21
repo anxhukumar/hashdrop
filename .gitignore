@@ -44,8 +44,7 @@ server/internal/database/
 # Build output
 /bin/
 /dist/
-/build/
-/cli/hashdrop
+*/build/
 
 # Dependency directories
 vendor/
@@ -62,3 +61,6 @@ TODO.txt
 
 # Secrets directory
 **/secrets/
+
+# Storage directgory
+storage
