@@ -15,7 +15,7 @@ Requests with a missing, malformed, or expired token will receive a `401 Unautho
 
 ## Base URL
 
-All API endpoints are relative to your Hashdrop server base URL, e.g. `https://api.hashdrop.dev`.
+All API endpoints are relative to Hashdrop server's base URL, e.g. `https://api.hashdrop.dev`.
 
 ## Endpoints
 
