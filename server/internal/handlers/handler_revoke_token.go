@@ -1,6 +1,10 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/anxhukumar/hashdrop/server/internal/auth"
+)
 
 func (s *Server) HandlerRevokeToken(w http.ResponseWriter, r *http.Request) {
 	logger := s.Logger.With("handler", "handler_revoke_token")
@@ -21,8 +25,11 @@ func (s *Server) HandlerRevokeToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hash refresh token
+	hashedRefreshToken := auth.HashRefreshToken(refreshToken.RefreshToken, []byte(s.Cfg.RefreshTokenHashingSecretV1))
+
 	// Set the revoked_at value in refresh_tokens in database
-	err := s.Store.Queries.RevokeRefreshToken(r.Context(), refreshToken.RefreshToken)
+	err := s.Store.Queries.RevokeRefreshToken(r.Context(), hashedRefreshToken)
 	if err != nil {
 		msgToDev := "error revoking refresh token in database"
 		RespondWithError(

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/anxhukumar/hashdrop/server/internal/database"
@@ -68,6 +70,19 @@ func (s *Server) HandlerGetFileHash(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			msgToDev := "file hash not found for given file id"
+			msgToClient := "file not found"
+			RespondWithWarn(
+				w,
+				logger,
+				msgToDev,
+				msgToClient,
+				err,
+				http.StatusNotFound,
+			)
+			return
+		}
 		msgToDev := "error fetching file hash from database"
 		RespondWithError(
 			w,
