@@ -4,6 +4,7 @@
 
 Hashdrop is a client-server application. The backend is a Go API server hosted on a managed server instance, responsible for authentication, metadata management, and coordinating with AWS services. The CLI is the client - it handles all file encryption locally before any data leaves your device. The two communicate over HTTPS. For file transfers, the CLI uploads encrypted data directly to S3 and downloads via CloudFront.
 
+![Hashdrop system architecture diagram](./assets/hashdrop-architecture.png)
 ---
 
 ## Components
@@ -40,7 +41,7 @@ Hashdrop uses four AWS services:
 
 **EC2** - hosts the Hashdrop API server. The server runs behind a reverse proxy on the EC2 instance, which handles HTTPS termination.
 
-**S3** - stores the encrypted file blobs. Files are uploaded directly from the CLI to S3 via presigned PUT URLs. The server never proxies file data - it only coordinates the transfer. After upload, the server verifies the actual object size via a `HeadObject` call before marking the file as uploaded.
+**S3** - stores the encrypted file blobs. Files are uploaded directly from the CLI to S3 via presigned PUT URLs. The server never proxies file data - it only coordinates the transfer.
 
 **CloudFront** - serves encrypted files on download. The server generates a short-lived signed CloudFront URL and redirects the client to it. This keeps the download path fast and avoids routing large file transfers through the API server.
 
