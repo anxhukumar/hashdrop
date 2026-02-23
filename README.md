@@ -29,6 +29,10 @@ Hashdrop follows a simple but secure flow:
 
 ## Architecture Overview
 
+![Hashdrop system architecture diagram](./assets/hashdrop-architecture.png)
+
+---
+
 Hashdrop has two main components:
 
 **Server** — a Go HTTPS API handling auth, file metadata, presigned S3 upload URLs, and CloudFront signed download URLs.

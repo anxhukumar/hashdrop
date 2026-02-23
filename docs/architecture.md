@@ -5,6 +5,7 @@
 Hashdrop is a client-server application. The backend is a Go API server hosted on a managed server instance, responsible for authentication, metadata management, and coordinating with AWS services. The CLI is the client - it handles all file encryption locally before any data leaves your device. The two communicate over HTTPS. For file transfers, the CLI uploads encrypted data directly to S3 and downloads via CloudFront.
 
 ![Hashdrop system architecture diagram](./assets/hashdrop-architecture.png)
+
 ---
 
 ## Components
