@@ -1,114 +1,97 @@
-
-# DOCUMENTATION AND DEPLOYMENT WORK IN PROGRESS...
 # Hashdrop
 
-> Hashdrop is a zero-trust secure command-line storage tool built in Go. It allows users to encrypt any kind of data (e.g. text, audio, video, image), on the client side and uploads the encrypted blob on a secure storage. It uses unique separate keys to encrypt each file, allowing stronger security. The encrypted files can be shared by links, and authorized people can decrypt and download the file safely using the shared key. It also allows the user to check file's integrity to ensure the data is not tampered with.
+> A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
+
+> [!WARNING]
+> **Deployment is currently pending. Hashdrop is not yet live and is under active development.**
+
+---
 
 ## How It Works
-
-Hashdrop follows a simple but secure flow:
 
 1. **Encrypt locally** — files are encrypted on your machine before anything leaves it
 2. **Upload safely** — only the encrypted blob reaches cloud storage (AWS S3)
 3. **Share a link** — recipients get a short-lived signed download URL via CloudFront
 4. **Decrypt on their end** — the recipient uses the shared key or passphrase to decrypt and verify the file
 
-**Your plaintext data never touches the server.**
-
 ---
 
 ## Features
 
-- **Token-based user authentication** — JWT access tokens + revocable refresh tokens
 - **Client-side AES-GCM encryption** — each file gets its own unique Data Encryption Key (DEK)
-- **Integrity verification** — plaintext hash is stored so you can confirm data wasn't tampered with
-- **Local vault** — store your keys in an AES-GCM encrypted vault at `~/.hashdrop/vault.enc`
-- **Passphrase mode (Optional)** — use a passphrase instead of a vault if you prefer using your own key
+- **Token-based authentication** — JWT access tokens with revocable refresh tokens
+- **Integrity verification** — plaintext hash stored at upload time so tampering can be detected
+- **Local vault** — encryption keys stored in an AES-GCM encrypted vault at `~/.hashdrop/vault.enc`
+- **Passphrase mode** — opt out of the vault and manage your own passphrase instead
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ![Hashdrop system architecture diagram](./docs/assets/hashdrop-architecture.png)
 
----
-
 Hashdrop has two main components:
 
-**Server** — a Go HTTPS API handling auth, file metadata, presigned S3 upload URLs, and CloudFront signed download URLs.
+**CLI** — a Go Cobra-based client that handles encryption, uploads, downloads, decryption, and local key and token management.
 
-**CLI** — a Go Cobra-based client (`hashdrop`) that handles encryption, uploads, downloads, decryption, and local key/token management.
+**API Server** — a Go HTTPS server running on AWS EC2 behind a reverse proxy. It handles authentication, file metadata, presigned S3 upload URLs, signed CloudFront download URLs, and abuse prevention.
+
+For a full breakdown see [Architecture](./docs/architecture.md).
 
 ---
 
 ## Installation
 ```bash
-git clone https://github.com/your-username/hashdrop
-cd hashdrop
-go build ./cli/...
+go install github.com/anxhukumar/hashdrop/cli/cmd/hashdrop@latest
 ```
 
-Move the binary somewhere in your `$PATH`:
-```bash
-mv hashdrop /usr/local/bin/hashdrop
-```
+See the [Installation guide](./docs/installation.md) for full setup instructions and troubleshooting.
 
 ---
 
-## Usage
-
-### Register and verify your account
+## Quick Start
 ```bash
+# Register and verify your account
 hashdrop auth register
-```
 
-### Log in
-```bash
+# Log in
 hashdrop auth login
-```
 
-### Upload a file
-```bash
+# Upload a file
 hashdrop upload ./secret.pdf
-```
 
-### List your files
-```bash
+# List your files
 hashdrop files list
+
+# Decrypt and download a file
+hashdrop decrypt <download-url>
 ```
 
-### Share and download
-```bash
-# The upload command returns a shareable link
-# The recipient runs:
-hashdrop decrypt --key <shared-key> <download-url> -o output.pdf
-```
-
-### Delete a file
-```bash
-hashdrop files delete <file-id>
-```
-
----
-
-## Local Storage
-
-Hashdrop keeps all local state under `~/.hashdrop/`:
-
-| File | Contents |
-|---|---|
-| `tokens.json` | Access + refresh tokens
-| `vault.enc` | AES-GCM encrypted key vault
+See the [CLI Usage guide](./docs/usage.md) for the full command reference.
 
 ---
 
 ## Tech Stack
 
 - **Go** — server and CLI
-- **SQLite** — metadata storage (WAL mode)
+- **AWS EC2** — server hosting
 - **AWS S3** — encrypted object storage
 - **AWS CloudFront** — signed URL delivery
 - **AWS SES** — OTP email delivery
+- **SQLite** — embedded metadata storage
 - **sqlc** — type-safe SQL query generation
+- **Caddy** — reverse proxy and HTTPS termination
 
 ---
+
+## Documentation
+
+- [Architecture](./docs/architecture.md)
+- [Security Model](./docs/security_model.md)
+- [Installation](./docs/installation.md)
+- [CLI Usage](./docs/usage.md)
+- [File Upload](./docs/uploading.md)
+- [Downloading and Decryption](./docs/decryption-and-downloading.md)
+- [Authentication](./docs/authentication.md)
+- [Resource Limits and Abuse Prevention](./docs/resource-limits-and-abuse-prevention.md)
+- [API Reference](./docs/api.md)
