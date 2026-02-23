@@ -95,3 +95,11 @@ See the [CLI Usage guide](./docs/usage.md) for the full command reference.
 - [Authentication](./docs/authentication.md)
 - [Resource Limits and Abuse Prevention](./docs/resource-limits-and-abuse-prevention.md)
 - [API Reference](./docs/api.md)
+
+---
+
+## License
+
+Copyright 2026 Anshu Kumar
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for the full license text.
