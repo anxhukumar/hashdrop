@@ -29,7 +29,7 @@ Hashdrop follows a simple but secure flow:
 
 ## Architecture Overview
 
-![Hashdrop system architecture diagram](./assets/hashdrop-architecture.png)
+![Hashdrop system architecture diagram](./docs/assets/hashdrop-architecture.png)
 
 ---
 
