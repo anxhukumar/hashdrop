@@ -20,11 +20,15 @@ import (
 
 func main() {
 
+	// Root context that is cancelled on SIGINT/SIGTERM
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	// Load configuration
 	cfg := config.LoadConfig()
 
 	// Initialize aws
-	awsConfig, s3Client, sesClient, err := aws.InitAWS(context.Background(), cfg.AwsRegion)
+	awsConfig, s3Client, sesClient, err := aws.InitAWS(ctx, cfg.AwsRegion)
 	if err != nil {
 		log.Fatalf("Failed to initialize aws: %s", err)
 	}
@@ -50,9 +54,6 @@ func main() {
 	server := handlers.NewServer(store, cfg, awsConfig, s3Client, sesClient)
 
 	// Rate limiting
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	limiters := ratelimit.NewDefaultLimiters(ctx)
 	rl := &ratelimit.Binder{
 		Server:   server,
@@ -92,10 +93,7 @@ func main() {
 		}
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-
-	<-stop
+	<-ctx.Done()
 
 	log.Println("Shutting down server...")
 

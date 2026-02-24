@@ -87,3 +87,9 @@ WHERE status = 'uploaded';
 SELECT CAST(COALESCE(SUM(encrypted_size_bytes), 0) AS INTEGER) AS total_bytes
 FROM files
 WHERE user_id = ? AND status = 'uploaded';
+
+-- name: GetStalePendingFiles :many
+SELECT user_id, s3_key
+FROM files
+WHERE status = 'pending'
+    AND created_at < :cutoff_time;

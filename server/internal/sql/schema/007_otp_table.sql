@@ -7,6 +7,7 @@ CREATE TABLE otp (
     expires_at TIMESTAMP NOT NULL,
     FOREIGN KEY (user_id)
         REFERENCES users(id)
+        ON DELETE CASCADE
 );
 
 -- +goose DOWN
