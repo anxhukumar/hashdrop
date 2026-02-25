@@ -39,10 +39,10 @@ func deleteStaleRefreshToken(ctx context.Context, s *handlers.Server, olderThan 
 // Deletes download attempts count older than a certain duration
 func deleteStaleDownloadAttemptsCount(ctx context.Context, s *handlers.Server, olderThan time.Duration) {
 
-	cutOffTime := time.Now().UTC().Add(-olderThan)
+	cutoffDate := time.Now().UTC().Add(-olderThan)
 
 	// Delete
-	err := s.Store.Queries.CleanDownloadCount(ctx, cutOffTime)
+	err := s.Store.Queries.CleanDownloadCount(ctx, cutoffDate)
 	if err != nil {
 		err := fmt.Errorf("error deleting old download attmepts count: %w", err)
 		logErrorWhileCleaning(s.Logger, "delete_stale_download_attempts_count", err)

@@ -1,16 +1,16 @@
 -- name: CheckAndUpdateDownloadAttemptsCount :one
-INSERT INTO download_attempts_count(id, file_id, created_at, attempts)
+INSERT INTO download_attempts_count(id, file_id, day, attempts)
 VALUES (
     ?,
     ?,
-    datetime('now'),
+    date('now'),
     1
 )
-ON CONFLICT(file_id, created_at)
+ON CONFLICT(file_id, day)
 DO UPDATE SET attempts = attempts + 1
 RETURNING attempts;
 
 -- name: CleanDownloadCount :exec
 DELETE
 FROM download_attempts_count
-WHERE created_at < :cutoff_time;
+WHERE day < :cutoff_date
