@@ -95,7 +95,7 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 		if err != nil {
 			err := fmt.Errorf("error while deleting file metadata: %w", err)
 			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
-			return
+			continue
 		}
 
 		// logging
