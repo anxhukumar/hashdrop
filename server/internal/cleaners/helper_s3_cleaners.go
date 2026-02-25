@@ -2,6 +2,7 @@ package cleaners
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/anxhukumar/hashdrop/server/internal/handlers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/google/uuid"
 )
 
@@ -42,6 +44,28 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 			Key:    aws.String(file.S3Key),
 		})
 		if err != nil {
+			var notFound *types.NotFound
+			if errors.As(err, &notFound) {
+				err := fmt.Errorf("s3 object not found: %w", err)
+				logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
+				// Mark metadata in database as failed
+				err = s.Store.Queries.UpdateFailedFile(
+					ctx,
+					database.UpdateFailedFileParams{
+						ID:     file.ID,
+						UserID: file.UserID,
+					},
+				)
+				if err != nil {
+					err := fmt.Errorf("error while deleting file metadata: %w", err)
+					logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
+					return
+				}
+
+				continue
+
+			}
+
 			err := fmt.Errorf("error while getting s3 head object: %w", err)
 			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
 			continue
@@ -71,7 +95,7 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 		if err != nil {
 			err := fmt.Errorf("error while deleting file metadata: %w", err)
 			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
-			continue
+			return
 		}
 
 		// logging

@@ -81,7 +81,7 @@ var cleanerConfig = struct {
 	staleDownloadAttemptsCountInterval: 1 * time.Hour,
 	staleUnverifiedUserMaxAge:          10 * time.Minute,
 	staleUnverifiedUserInterval:        10 * time.Minute,
-	staleOtpMaxAge:                     10 * time.Minute,
+	staleOtpMaxAge:                     0,
 	staleOtpInterval:                   10 * time.Minute,
 }
 
@@ -94,9 +94,8 @@ func cleaner(
 	olderThan time.Duration,
 	interval time.Duration,
 ) {
-	if interval <= 0 || olderThan <= 0 {
-
-		panic("cleaner interval and max age must be > 0")
+	if interval <= 0 {
+		panic("cleaner interval must be > 0")
 	}
 
 	ticker := time.NewTicker(interval)
