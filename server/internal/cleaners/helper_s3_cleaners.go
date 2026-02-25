@@ -7,28 +7,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/anxhukumar/hashdrop/server/internal/database"
 	"github.com/anxhukumar/hashdrop/server/internal/handlers"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/uuid"
 )
 
-// Calls the deletePendingS3File() on regular intervals.
-// It blocks until ctx is cancelled and should be started in a go routine.
-func S3Cleaner(ctx context.Context, s *handlers.Server, cleaningRate time.Duration, olderThan time.Duration) error {
-	ticker := time.NewTicker(cleaningRate)
-	defer ticker.Stop()
+const cleanerNameForLogging = "s3_cleaner"
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-			deletePendingS3File(ctx, s, olderThan)
-		}
-	}
-}
-
+// Deletes pending marked s3 files older than a certain duration
 func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time.Duration) {
 
 	cutOffTime := time.Now().UTC().Add(-olderThan)
@@ -37,7 +25,7 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 	pendingFiles, err := s.Store.Queries.GetStalePendingFiles(ctx, cutOffTime)
 	if err != nil {
 		err := fmt.Errorf("error while getting pending files from database: %w", err)
-		logErrorFileDeletion(s.Logger, err)
+		logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
 		return
 	}
 
@@ -55,7 +43,7 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 		})
 		if err != nil {
 			err := fmt.Errorf("error while getting s3 head object: %w", err)
-			logErrorFileDeletion(s.Logger, err)
+			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
 			continue
 		}
 
@@ -68,7 +56,21 @@ func deletePendingS3File(ctx context.Context, s *handlers.Server, olderThan time
 		})
 		if err != nil {
 			err := fmt.Errorf("error while deleting s3 object: %w", err)
-			logErrorFileDeletion(s.Logger, err)
+			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
+			continue
+		}
+
+		// Mark metadata in database as failed
+		err = s.Store.Queries.UpdateFailedFile(
+			ctx,
+			database.UpdateFailedFileParams{
+				ID:     file.ID,
+				UserID: file.UserID,
+			},
+		)
+		if err != nil {
+			err := fmt.Errorf("error while deleting file metadata: %w", err)
+			logErrorWhileCleaning(s.Logger, cleanerNameForLogging, err)
 			continue
 		}
 
@@ -86,7 +88,7 @@ func logPendingFileDeletion(userID uuid.UUID, verifiedFileSize int64, logger *sl
 
 	// Add context about file and user
 	log := logger.With(
-		"cleaner", "s3_cleaner",
+		"cleaner_name", cleanerNameForLogging,
 		"user_id", userID.String(),
 		"verified_file_size", verifiedFileSizeString,
 	)
@@ -94,13 +96,13 @@ func logPendingFileDeletion(userID uuid.UUID, verifiedFileSize int64, logger *sl
 	log.Info("file deleted from s3")
 }
 
-// Log error while deleting file
-func logErrorFileDeletion(logger *slog.Logger, err error) {
+// Log error while running any cleaner
+func logErrorWhileCleaning(logger *slog.Logger, cleanerName string, err error) {
 
 	// Add context about user and error
 	logger.Error(
-		"error while running s3_cleaner",
-		"cleaner", "s3_cleaner",
+		"error while running cleaners",
+		"cleaner_name", cleanerName,
 		"err", err,
 	)
 }

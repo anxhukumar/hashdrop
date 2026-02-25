@@ -107,8 +107,8 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 
 		// Update db status to failed
 		if err := s.Store.Queries.UpdateFailedFile(r.Context(), database.UpdateFailedFileParams{
-			Status: "failed",
 			ID:     FileUploadMetadata.FileID,
+			UserID: userID,
 		}); err != nil {
 			msgToDev := "error marking file upload status as failed"
 			RespondWithError(

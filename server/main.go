@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/anxhukumar/hashdrop/server/internal/aws"
+	"github.com/anxhukumar/hashdrop/server/internal/cleaners"
 	"github.com/anxhukumar/hashdrop/server/internal/config"
 	"github.com/anxhukumar/hashdrop/server/internal/handlers"
 	"github.com/anxhukumar/hashdrop/server/internal/ratelimit"
@@ -52,6 +53,9 @@ func main() {
 	// Initialize dependencies
 	store := store.NewStore(dbConn)
 	server := handlers.NewServer(store, cfg, awsConfig, s3Client, sesClient)
+
+	// Run automated cleaners to guard database and bucket storage
+	cleaners.ScheduledCleaners(ctx, server)
 
 	// Rate limiting
 	limiters := ratelimit.NewDefaultLimiters(ctx)

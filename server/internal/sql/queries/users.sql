@@ -33,3 +33,9 @@ UPDATE users
 SET verified = 1,
     updated_at = datetime('now')
 WHERE email = ? AND verified = 0;
+
+-- name: CleanUnverifiedUser :exec
+DELETE
+FROM users
+WHERE verified = 0
+    AND created_at < :cutoff_time

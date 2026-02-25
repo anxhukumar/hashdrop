@@ -30,7 +30,7 @@ WHERE id = ? AND user_id = ? AND status='pending';
 -- name: UpdateFailedFile :exec
 UPDATE files
 SET
-    status = ?,
+    status = 'failed',
     updated_at = datetime('now')
 WHERE id = ? AND user_id = ? AND status='pending';
 
@@ -89,7 +89,13 @@ FROM files
 WHERE user_id = ? AND status = 'uploaded';
 
 -- name: GetStalePendingFiles :many
-SELECT user_id, s3_key
+SELECT id, user_id, s3_key
 FROM files
 WHERE status = 'pending'
     AND created_at < :cutoff_time;
+
+-- name: CleanDeletedAndFailedFiles :exec
+DELETE
+FROM files
+WHERE (status = 'deleted' OR status = 'failed')
+    AND updated_at < :cutoff_time;

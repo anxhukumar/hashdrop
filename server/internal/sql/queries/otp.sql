@@ -23,3 +23,8 @@ WHERE user_id = ?;
 -- name: DeleteOtpByOtpID :exec
 DELETE FROM otp
 WHERE id = ?;
+
+-- name: CleanExpiredOtp :exec
+DELETE
+FROM otp
+WHERE expires_at < :cutoff_time;

@@ -22,3 +22,9 @@ WHERE refresh_tokens.token = ?
 UPDATE refresh_tokens
 SET updated_at = datetime('now'), revoked_at = datetime('now')
 WHERE token = ?;
+
+-- name: CleanRevokedAndExpiredToken :exec
+DELETE
+FROM refresh_tokens
+WHERE expires_at < :cutoff_time
+    OR (revoked_at IS NOT NULL AND revoked_at < :cutoff_time);
