@@ -99,3 +99,8 @@ DELETE
 FROM files
 WHERE (status = 'deleted' OR status = 'failed')
     AND updated_at < :cutoff_time;
+
+-- name: CountFilesOfUser :one
+SELECT COUNT(*) AS number_of_files
+FROM files
+WHERE user_id = ?;

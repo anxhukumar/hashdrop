@@ -10,5 +10,5 @@ CREATE TABLE otp (
         ON DELETE CASCADE
 );
 
--- +goose DOWN
+-- +goose Down
 DROP TABLE otp
