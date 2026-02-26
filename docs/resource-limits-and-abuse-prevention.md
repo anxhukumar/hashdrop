@@ -72,7 +72,11 @@ The server runs a set of background cleanup routines that start at boot and run 
 
 ### S3 — stale pending files
 
-When a file upload is initiated, a `pending` record is created in the database and a presigned S3 URL is issued. If the upload never completes — due to a client crash, network failure, or an aborted upload — the object may still exist in S3 with no corresponding completed record. The cleaner periodically queries for pending file records older than a configured age, checks whether the object exists in S3 via a `HeadObject` call, deletes it if found, and marks the database record as `failed`. If the object is already gone, the record is marked `failed` directly.
+When a file upload is initiated, a `pending` record is created in the database and a presigned S3 URL is issued. If the upload never completes — due to a client crash, network failure, or an aborted upload — the object may still exist in S3 with no corresponding completed record.
+
+This cleanup also covers a specific abuse scenario: a user could bypass the client-side size validation, upload an oversized file directly to S3 via the presigned URL, and then deliberately never call the completion endpoint — avoiding the server-side size verification that would otherwise catch and delete it. Since the file record never leaves `pending` status in this case, the cleaner picks it up, deletes the object from S3, and marks the record as `failed`. This significantly limits the damage from such an attack by ensuring oversized objects cannot persist in storage indefinitely.
+
+The cleaner periodically queries for pending file records older than a configured age, checks whether the object exists in S3 via a `HeadObject` call, deletes it if found, and marks the database record as `failed`. If the object is already gone, the record is marked `failed` directly.
 
 ### Database — stale file metadata
 
@@ -84,7 +88,7 @@ Refresh tokens that have been revoked or have passed their expiry are periodical
 
 ### Database — stale download counters
 
-The per-file daily download counters used by the CloudFront download protection are cleared on a daily cycle. This is what resets the download limit each day.
+The per-file daily download counters used by the CloudFront download protection are cleared on a daily cycle.
 
 ### Database — unverified users
 
