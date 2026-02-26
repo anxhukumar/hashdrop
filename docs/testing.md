@@ -107,9 +107,3 @@ Covers file ID resolution logic — short ID prefix matching and conflict detect
 The server test suite uses a shared `SetupTestDB` helper in `internal/test_util` that creates a temporary SQLite database and runs all schema migrations in order before each test. This ensures tests run against a real schema without requiring any external dependencies or a running server instance.
 
 ---
-
-## Related Documentation
-
-- [Security Model](./security_model.md) — encryption and key management details relevant to CLI tests
-- [Resource Limits and Abuse Prevention](./resource-limits-and-abuse-prevention.md) — storage quota and download limit logic covered by server tests
-- [Architecture](./architecture.md) — system overview
