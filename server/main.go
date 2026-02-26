@@ -17,6 +17,7 @@ import (
 	"github.com/anxhukumar/hashdrop/server/internal/ratelimit"
 	"github.com/anxhukumar/hashdrop/server/internal/store"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pressly/goose"
 )
 
 func main() {
@@ -48,6 +49,15 @@ func main() {
 `)
 	if err != nil {
 		log.Fatalf("failed to enable WAL mode: %s", err)
+	}
+
+	// Run sql migrations
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		log.Fatalf("failed to set goose dialect: %s", err)
+	}
+
+	if err := goose.Up(dbConn, "internal/sql/migrations"); err != nil {
+		log.Fatalf("failed to run migrations: %s", err)
 	}
 
 	// Initialize dependencies
