@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const envFilePath = "app/secrets/.env"
+const envFilePath = "secrets/.env"
 
 type Config struct {
 	Port string
