@@ -93,6 +93,4 @@ func (s *Server) HandlerResolveFileMatches(w http.ResponseWriter, r *http.Reques
 		logger.Error("failed to send response", "err", err)
 		return
 	}
-
-	logger.Info("resolved file id conflict matches successfully")
 }
