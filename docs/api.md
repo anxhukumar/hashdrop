@@ -586,3 +586,29 @@ No response body.
 |---|---|
 | `403 Forbidden` | Server is not running in a `dev` environment |
 | `500 Internal Server Error` | Unexpected server error |
+
+---
+
+### Get compatible CLI version
+```
+GET /api/cli/version
+```
+
+Returns the minimum CLI version compatible with this server. The CLI calls this endpoint before executing any command to check whether the installed version is still supported. If the installed version does not match, the user is prompted to update.
+
+**Authentication:** None
+
+**Request body:** None
+
+**Response `200 OK`**
+```json
+{
+  "compatible_version": "1.0.0"
+}
+```
+
+**Error responses**
+
+| Status | Description |
+|---|---|
+| `500 Internal Server Error` | Unexpected server error |

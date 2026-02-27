@@ -59,3 +59,10 @@ func (b *Binder) FileMeta(next http.Handler) http.Handler {
 	h = UserIDRateLimit(h, b.Limiters.FileMetaUserLimiter, b.Server)
 	return h
 }
+
+// CliVersion handles the cli version check reqeusts only.
+func (b *Binder) CliVersion(next http.Handler) http.Handler {
+	h := GlobalRateLimit(b.Limiters.CliVersionCheckGlobalLimiter, b.Server)(next)
+	h = IPRateLimit(h, b.Limiters.CliVersionCheckIpLimiter, b.Server)
+	return h
+}

@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/anxhukumar/hashdrop/cli/internal/cliversion"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,13 @@ var rootCmd = &cobra.Command{
 
 Files are encrypted client-side, stored as unreadable blobs,
 and shared via links with integrity verification.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		switch cmd.Name() {
+		case "help", "completion", "version":
+			return nil
+		}
+		return cliversion.CheckCliVersion(Verbose)
+	},
 }
 
 func Execute() {

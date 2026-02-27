@@ -113,3 +113,8 @@ type FileIDConflictMatches struct {
 	FileName string    `json:"file_name"`
 	FileID   uuid.UUID `json:"file_id"`
 }
+
+// Outgoing: CLI version response
+type CliVersion struct {
+	CompatibleVersion string `json:"compatible_version"`
+}

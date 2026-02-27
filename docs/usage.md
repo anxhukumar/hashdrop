@@ -99,4 +99,18 @@ hashdrop decrypt --verify https://hashdrop.dev/...
 
 ---
 
+## Checking the CLI Version
+```bash
+hashdrop version
+```
+
+Prints the current version of the installed Hashdrop CLI.
+
+**Example**
+```bash
+hashdrop version
+```
+
+---
+
 > Add `-v` / `--verbose` to any command for detailed output.

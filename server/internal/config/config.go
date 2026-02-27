@@ -40,6 +40,8 @@ type Config struct {
 	DailyPerFileDownloadLimit int
 
 	AwsRegion string
+
+	CliVersion string
 }
 
 // Load environment variables and return a config struct
@@ -79,6 +81,8 @@ func LoadConfig() *Config {
 		DailyPerFileDownloadLimit: 3,
 
 		AwsRegion: getEnv("AWS_REGION"),
+
+		CliVersion: "1.0.0",
 	}
 
 	return cfg

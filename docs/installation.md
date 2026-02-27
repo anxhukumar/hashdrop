@@ -51,7 +51,7 @@ go install github.com/anxhukumar/hashdrop/cli/cmd/hashdrop@latest
 
 Verify the installation:
 ```bash
-hashdrop --help
+hashdrop version
 ```
 
 <details>
@@ -69,7 +69,7 @@ echo 'export PATH=$PATH:$HOME/go/bin' >> ~/.zshrc
 source ~/.zshrc
 ```
 
-Then try `hashdrop --help` again.
+Then try `hashdrop version` again.
 
 </details>
 

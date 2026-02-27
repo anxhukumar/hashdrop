@@ -43,6 +43,7 @@ const (
 	ResolveFileIDConflictEndpoint = "/api/files/resolve"
 	DeleteUserEndpoint            = "/api/user"
 	DownloadFileEndpoint          = "/files/download/"
+	CliVersionCheckEndpoint       = "/api/cli/version"
 
 	// ================================
 	// Cryptography — Argon2 Parameters
@@ -54,4 +55,9 @@ const (
 	ArgonMemory  = 64 * 1024 // memory cost (KB) → 64MB
 	ArgonThreads = 1         // parallelism
 	ArgonKeyLen  = 32        // derived key length (bytes)
+
+	// ================================
+	// Current CLI Version
+	// ================================
+	CurrentCliVersion = "1.0.0"
 )

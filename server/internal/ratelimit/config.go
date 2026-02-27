@@ -26,6 +26,10 @@ type Limiters struct {
 	TokenGlobalLimiter *rate.Limiter
 	TokenIPLimiter     *keyRateLimiter
 
+	// Cli version
+	CliVersionCheckGlobalLimiter *rate.Limiter
+	CliVersionCheckIpLimiter     *keyRateLimiter
+
 	// ---------------------------------------
 	// PRIVATE
 	// ---------------------------------------
@@ -68,6 +72,11 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 		// Frequent but lightweight.
 		TokenGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
 		TokenIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(2), 10),
+
+		// Cli Version Check:
+		// Very Frequent and lightweight
+		CliVersionCheckGlobalLimiter: rate.NewLimiter(rate.Limit(100), 200),
+		CliVersionCheckIpLimiter:     NewKeyRateLimiter(ctx, rate.Limit(10), 20),
 
 		// PRIVATE (S3 / DB INTENSIVE)
 
