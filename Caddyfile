@@ -5,7 +5,7 @@ api.hashdrop.dev {
 
 # Hashdrop docs
 hashdrop.dev {
-    root * /hashdrop-static-site/site
+    root * /site
     file_server
     encode gzip
 }

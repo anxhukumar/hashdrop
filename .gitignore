@@ -53,8 +53,8 @@ vendor/
 tmp/
 .air.toml
 
-# Todo notes
-TODO.txt
+# Notes
+NOTES.txt
 
 # Private keys
 *.pem
