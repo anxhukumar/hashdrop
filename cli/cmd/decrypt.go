@@ -1,7 +1,5 @@
 /*
-Copyright © 2026 Anshu Kumar
-
-Licensed under the Apache License, Version 2.0.
+Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 */
 package cmd
 
@@ -9,11 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"path"
 	"strings"
+	"time"
 
 	decryptCommand "github.com/anxhukumar/hashdrop/cli/internal/decrypt_command"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -112,11 +113,35 @@ Examples:
 		// Decrypt file
 
 		// Get encrypted file
-		encFileData, err := decryptCommand.DownloadEncryptedFile(fileUrl, Verbose)
+		encFileData, totalSize, err := decryptCommand.DownloadEncryptedFile(fileUrl, Verbose)
 		if err != nil {
 			return err
 		}
 		defer encFileData.Close()
+
+		fmt.Println("📥 downloading")
+
+		// Progress bar
+		bar := progressbar.NewOptions64(
+			totalSize,
+			progressbar.OptionSetWriter(os.Stderr),
+			progressbar.OptionShowBytes(true),
+			progressbar.OptionSetWidth(15),
+			progressbar.OptionThrottle(65*time.Millisecond),
+			progressbar.OptionEnableColorCodes(true),
+			progressbar.OptionOnCompletion(func() {
+				fmt.Fprint(os.Stderr, "\n")
+			}),
+			progressbar.OptionSetTheme(progressbar.Theme{
+				Saucer:        "[cyan]=[reset]", // Using cyan for download to distinguish from upload
+				SaucerHead:    "[cyan]>[reset]",
+				SaucerPadding: " ",
+				BarStart:      "[",
+				BarEnd:        "]",
+			}),
+		)
+
+		proxyReader := progressbar.NewReader(encFileData, bar)
 
 		// If user provided a path use that otherwise decrypt in download directory
 		out, finalOutPath, err := decryptCommand.GetOutputFile(fileID, Verbose, decryptionFilePath)
@@ -125,7 +150,7 @@ Examples:
 		}
 		defer out.Close()
 
-		derivedPlaintextHash, err := encryption.DecryptAndHashStreaming(encFileData, out, DEK)
+		derivedPlaintextHash, err := encryption.DecryptAndHashStreaming(&proxyReader, out, DEK)
 		if err != nil {
 			if Verbose {
 				return fmt.Errorf("decrypt failed: %w", err)
