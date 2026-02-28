@@ -1,6 +1,6 @@
 # Hashdrop
 
-> A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
+A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
 
 > [!NOTE]
 > **Email verification is currently pending AWS SES approval.** Registration and account creation will be available once SES is out of sandbox mode.
