@@ -1,0 +1,11 @@
+# Hashdrop api
+api.hashdrop.dev {
+    reverse_proxy hashdrop-app:8080
+}
+
+# Hashdrop docs
+hashdrop.dev {
+    root * /hashdrop-static-site/site
+    file_server
+    encode gzip
+}
