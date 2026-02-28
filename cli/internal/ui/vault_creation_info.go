@@ -8,7 +8,7 @@ func PrintVaultCreationInfo() {
 
 A secure local vault will now be created to store your file encryption keys.
 
-• Your vault password protects this vault
+• This vault is protected by a password
 • This is NOT your account password
 • You must remember this vault password to unlock your files
 • If you forget it, your vault cannot be opened and your files cannot be decrypted
