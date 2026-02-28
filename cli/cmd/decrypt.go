@@ -38,9 +38,9 @@ By default, the decrypted file is saved to your Downloads directory.
 You may optionally provide a destination path or directory.
 
 Examples:
-  hashdrop decrypt https://cdn.hashdrop.dev/... 
-  hashdrop decrypt https://cdn.hashdrop.dev/... ./output.txt
-  hashdrop decrypt --key https://cdn.hashdrop.dev/... --verify
+  hashdrop decrypt https://api.hashdrop.dev/... 
+  hashdrop decrypt https://api.hashdrop.dev/... ./output.txt
+  hashdrop decrypt --key https://api.hashdrop.dev/... --verify
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {

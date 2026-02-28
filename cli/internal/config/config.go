@@ -27,7 +27,7 @@ const (
 	// ================================
 	// API Configuration
 	// ================================
-	BaseURL                       = "http://localhost:8080"
+	BaseURL                       = "https://api.hashdrop.dev"
 	RegisterEndpoint              = "/api/user/register"
 	VerifyUserEndpoint            = "/api/user/verify"
 	LoginEndpoint                 = "/api/user/login"
