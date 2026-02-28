@@ -105,7 +105,7 @@ Use --no-vault to manage the encryption secret yourself.
 		ctx, cancel := context.WithTimeout(ctx, config.MaxTimeAllowedToUploadFile*time.Minute)
 		defer cancel()
 
-		fmt.Println("Uploading file…")
+		fmt.Println("📤 uploading")
 
 		if err := upload.UploadFileToS3(
 			ctx,

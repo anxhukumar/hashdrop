@@ -6,9 +6,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 	"github.com/anxhukumar/hashdrop/cli/internal/encryption"
+	"github.com/schollz/progressbar/v3"
 )
 
 // These are byte values to predict chunk size
@@ -59,12 +61,34 @@ func UploadFileToS3(
 	overheadPerChunk := int64(nonceSize + lenField + gcmTag)
 	encryptedSize := plainSize + numChunks*overheadPerChunk
 
+	// Progress bar configuration
+	bar := progressbar.NewOptions64(
+		encryptedSize,
+		progressbar.OptionSetWriter(os.Stderr),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetWidth(15),
+		progressbar.OptionThrottle(65*time.Millisecond),
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionOnCompletion(func() {
+			fmt.Fprint(os.Stderr, "\n")
+		}),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "[green]=[reset]",
+			SaucerHead:    "[green]>[reset]",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}),
+	)
+
+	proxyReader := progressbar.NewReader(pr, bar)
+
 	// Send http request while taking data from the stream
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPut,
 		presign.UploadResource.URL,
-		pr,
+		&proxyReader,
 	)
 	if err != nil {
 		return err
