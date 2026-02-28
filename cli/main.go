@@ -1,5 +1,7 @@
 /*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+Copyright © 2026 Anshu Kumar
+
+Licensed under the Apache License, Version 2.0.
 */
 package main
 
