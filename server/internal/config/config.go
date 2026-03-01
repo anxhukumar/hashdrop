@@ -21,7 +21,9 @@ type Config struct {
 	S3GlobalQuotaLimit       int64
 	S3UserSpecificQuotaLimit int64
 
-	DbURL string
+	DbURL            string
+	DbFilePath       string
+	DbBackupInterval time.Duration
 
 	JWTSecret string
 
@@ -62,7 +64,9 @@ func LoadConfig() *Config {
 		S3GlobalQuotaLimit:       int64(20_000_000_000), // 20 GB maximum
 		S3UserSpecificQuotaLimit: int64(1_000_000_000),  // 1 GB maximum
 
-		DbURL: getEnv("DB"),
+		DbURL:            getEnv("DB"),
+		DbFilePath:       "storage/storage.db",
+		DbBackupInterval: time.Hour * 24,
 
 		JWTSecret: getEnv("JWT_SECRET"),
 

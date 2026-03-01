@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/anxhukumar/hashdrop/server/internal/aws"
+	"github.com/anxhukumar/hashdrop/server/internal/backup"
 	"github.com/anxhukumar/hashdrop/server/internal/cleaners"
 	"github.com/anxhukumar/hashdrop/server/internal/config"
 	"github.com/anxhukumar/hashdrop/server/internal/handlers"
@@ -66,6 +67,9 @@ func main() {
 
 	// Run automated cleaners to guard database and bucket storage
 	cleaners.ScheduledCleaners(ctx, server)
+
+	// Run automated database backup
+	backup.DatabaseBackup(ctx, server, cfg.DbBackupInterval)
 
 	// Rate limiting
 	limiters := ratelimit.NewDefaultLimiters(ctx)
