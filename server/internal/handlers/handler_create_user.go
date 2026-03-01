@@ -60,7 +60,8 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 			if sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
 				// Email already exists
 				msgToDev := "email already exists (unique constraint hit)"
-				msgToClient := "an account with this email already exists"
+				msgToClient := `An account with this email already exists.
+				 If you couldn’t verify your account earlier, please try again after some time.`
 
 				RespondWithWarn(
 					w,

@@ -15,8 +15,8 @@ import (
 
 // KeyCleanupTTL is the maximum age after which inactive visitors entries are removed.
 const (
-	keyCleanupTTL   = 10 * time.Minute
-	cleanupInterval = time.Minute
+	keyCleanupTTL   = 2 * time.Hour
+	cleanupInterval = 10 * time.Minute
 )
 
 type visitor struct {

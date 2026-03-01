@@ -18,15 +18,19 @@ type Limiters struct {
 	// Server health check, returns OK.
 	HealthzGlobalLimiter *rate.Limiter
 
-	// Thins like Register, Login, Account deletion.
+	// Things like Register, Login, Account deletion.
 	AuthGlobalLimiter *rate.Limiter
 	AuthIPLimiter     *keyRateLimiter
+
+	// Control otp
+	OTPRateGlobalLimiter *rate.Limiter
+	OTPRateIPLimiter     *keyRateLimiter
 
 	// Refresh token
 	TokenGlobalLimiter *rate.Limiter
 	TokenIPLimiter     *keyRateLimiter
 
-	// Cli version
+	// CLI version check
 	CliVersionCheckGlobalLimiter *rate.Limiter
 	CliVersionCheckIpLimiter     *keyRateLimiter
 
@@ -55,47 +59,56 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 		// PUBLIC / ADMIN
 
 		// Reset: Extreme protection. Only required for dev.
-		// 1 request every 30 seconds.
+		// 1 request every 30 seconds. Burst: 1.
 		ResetGlobalLimiter: rate.NewLimiter(rate.Every(30*time.Second), 1),
 
-		// Healthz: Standard uptime monitoring.
-		// 5 requests per second global.
+		// Healthz:
+		// 5 requests per second globally. Burst: 10.
 		HealthzGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
 
 		// Auth (Register/Login/DeleteAccount):
-		// Global: 5 per second.
-		// IP: 3 request every 60 seconds.
-		AuthGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-		AuthIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(3.0/60.0), 2),
+		// Global: 5 requests per second. Burst: 10.
+		// IP: Refills at 3 requests per minute. Burst: 10.
+		// (An IP can send up to 10 immediately, then sustains at 3/minute.)
+		AuthGlobalLimiter: rate.NewLimiter(rate.Limit(10), 30),
+		AuthIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(3.0/60.0), 5),
+
+		// OTP (Send/Verify):
+		// Global: Refills at 100 requests per hour. Burst: 100.
+		// IP: Refills at 3 requests per hour. Burst: 3.
+		OTPRateGlobalLimiter: rate.NewLimiter(rate.Limit(100.0/3600.0), 100),
+		OTPRateIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(3.0/3600.0), 3),
 
 		// Token (Refresh/Revoke):
-		// Frequent but lightweight.
-		TokenGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
-		TokenIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(2), 10),
+		// Global: 20 requests per second. Burst: 40.
+		// IP: 1 request per second. Burst: 5.
+		TokenGlobalLimiter: rate.NewLimiter(rate.Limit(10), 30),
+		TokenIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(1), 5),
 
-		// Cli Version Check:
-		// Very Frequent and lightweight
-		CliVersionCheckGlobalLimiter: rate.NewLimiter(rate.Limit(100), 200),
+		// CLI Version Check:
+		// Global: 100 requests per second. Burst: 200.
+		// IP: 10 requests per second. Burst: 20.
+		CliVersionCheckGlobalLimiter: rate.NewLimiter(rate.Limit(50), 100),
 		CliVersionCheckIpLimiter:     NewKeyRateLimiter(ctx, rate.Limit(10), 20),
 
 		// PRIVATE (S3 / DB INTENSIVE)
 
 		// Upload (Presign/Complete):
-		// Global: 5 uploads/sec.
-		// User: 1 upload every 2 seconds.
-		UploadGlobalLimiter: rate.NewLimiter(rate.Limit(5), 10),
-		UploadUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(0.2), 3),
+		// Global: 5 uploads per second. Burst: 10.
+		// User: Refills at 0.2 requests per second (~1 upload every 5 seconds). Burst: 1.
+		UploadGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
+		UploadUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(0.2), 1),
 
 		// List (GetAllFiles, ResolveMatches):
-		// Global: 40/sec (SQLite reads are very fast).
-		// User: 5/sec.
-		ListGlobalLimiter: rate.NewLimiter(rate.Limit(40), 80),
+		// Global: 40 requests per second. Burst: 80.
+		// User: 5 requests per second. Burst: 10.
+		ListGlobalLimiter: rate.NewLimiter(rate.Limit(20), 100),
 		ListUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(5), 10),
 
 		// FileMeta (Detail, Salt, Hash, Delete):
-		// Global: 20/sec.
-		// User: 10/sec.
-		FileMetaGlobalLimiter: rate.NewLimiter(rate.Limit(20), 40),
-		FileMetaUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(2), 5),
+		// Global: 20 requests per second. Burst: 40.
+		// User: 5 requests per second. Burst: 5.
+		FileMetaGlobalLimiter: rate.NewLimiter(rate.Limit(20), 100),
+		FileMetaUserLimiter:   NewKeyRateLimiter(ctx, rate.Limit(5), 5),
 	}
 }

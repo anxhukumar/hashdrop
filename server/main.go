@@ -79,7 +79,7 @@ func main() {
 
 	mux.Handle("DELETE /admin/reset", rl.Reset(http.HandlerFunc(server.HandlerReset)))
 	mux.Handle("GET /api/healthz", rl.Healthz(http.HandlerFunc(server.HandlerReadiness)))
-	mux.Handle("POST /api/user/register", rl.Auth(http.HandlerFunc(server.HandlerCreateUser)))
+	mux.Handle("POST /api/user/register", rl.OtpLimit(http.HandlerFunc(server.HandlerCreateUser)))
 	mux.Handle("PATCH /api/user/verify", rl.Auth(http.HandlerFunc(server.HandlerVerifyUser)))
 	mux.Handle("POST /api/user/login", rl.Auth(http.HandlerFunc(server.HandlerLogin)))
 	mux.Handle("POST /api/token/refresh", rl.Token(http.HandlerFunc(server.HandlerRefreshToken)))

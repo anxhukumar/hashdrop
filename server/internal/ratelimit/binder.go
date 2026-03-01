@@ -66,3 +66,10 @@ func (b *Binder) CliVersion(next http.Handler) http.Handler {
 	h = IPRateLimit(h, b.Limiters.CliVersionCheckIpLimiter, b.Server)
 	return h
 }
+
+// OtpLimit handles the number of otp's sent during account creation.
+func (b *Binder) OtpLimit(next http.Handler) http.Handler {
+	h := GlobalRateLimit(b.Limiters.OTPRateGlobalLimiter, b.Server)(next)
+	h = IPRateLimit(h, b.Limiters.OTPRateIPLimiter, b.Server)
+	return h
+}
