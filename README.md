@@ -2,9 +2,6 @@
 
 A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
 
-> [!NOTE]
-> **Email verification is currently pending AWS SES approval.** Registration and account creation will be available once SES is out of sandbox mode.
-
 ---
 
 ## How It Works
@@ -36,7 +33,7 @@ Hashdrop has two main components:
 
 **API Server** — a Go HTTPS server running on AWS EC2 behind a reverse proxy. It handles authentication, file metadata, presigned S3 upload URLs, signed CloudFront download URLs, and abuse prevention.
 
-For a full breakdown see the [Architecture](./docs/architecture.md) doc or visit the [documentation site](https://hashdrop.dev).
+For a full breakdown see the [Architecture](./docs/architecture.md) doc.
 
 ---
 
