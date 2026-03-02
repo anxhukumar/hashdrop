@@ -13,4 +13,5 @@ func (s *Server) HandlerReadiness(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to write readiness response", "err", err)
 		return
 	}
+	logger.Info("server health checked")
 }

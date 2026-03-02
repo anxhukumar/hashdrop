@@ -122,4 +122,6 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 		logger.Error("failed to send response", "err", err)
 		return
 	}
+
+	logger.Info("new account created")
 }

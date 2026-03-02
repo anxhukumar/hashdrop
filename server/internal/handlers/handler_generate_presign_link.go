@@ -172,4 +172,5 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 		logger.Error("failed to send response", "err", err)
 		return
 	}
+	logger.Info("user generated presign link")
 }

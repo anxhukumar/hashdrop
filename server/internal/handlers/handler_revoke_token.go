@@ -43,4 +43,5 @@ func (s *Server) HandlerRevokeToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	logger.Info("refresh token revoked")
 }

@@ -187,4 +187,10 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 			S3ObjectKey:      ObjectKey,
 			UploadedFileSize: verifiedFileSize,
 		})
+
+	logger.Info(
+		"user completed file upload verification",
+		"verified_file_size", verifiedFileSize,
+		"key_management_mode", keyManagementModeVal,
+	)
 }
