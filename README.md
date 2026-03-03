@@ -86,6 +86,7 @@ See the [CLI Usage guide](./docs/usage.md) for the full command reference.
 Full documentation is available at [hashdrop.dev](https://hashdrop.dev).
 
 - [Architecture](./docs/architecture.md)
+- [Scaling Strategy](./docs/scaling_strategy.md)
 - [Security Model](./docs/security_model.md)
 - [Installation](./docs/installation.md)
 - [CLI Usage](./docs/usage.md)

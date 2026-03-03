@@ -60,6 +60,11 @@ Hashdrop uses four AWS services:
 
 **Download** - the CLI requests the file from the server, which validates the daily download limit, generates a signed CloudFront URL, and redirects the CLI to it. The CLI then streams and decrypts the blob locally.
 
+## Architectural Trade-offs and Scaling
+
+The current deployment prioritizes simplicity and cost-efficiency.  
+For a detailed discussion of infrastructure trade-offs and potential scaling paths (including serverless and load-balanced architectures), see [Scaling Strategy](./scaling_strategy.md).
+
 ---
 
 ## Related Documentation
