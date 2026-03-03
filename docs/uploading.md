@@ -2,7 +2,7 @@
 
 ## Overview
 
-When you run `hashdrop upload <file-path>`, a multi-step process coordinates between your device, the Hashdrop backend, and S3 to ensure your file is validated, encrypted, and securely stored — without your raw file data ever reaching the server. For details on how encryption and key generation work, see [Security Model](./security_model.md).
+When you run `hashdrop upload <file-path>`, a multi-step process coordinates between your device, the Hashdrop backend, and S3 to ensure your file is validated, encrypted, and securely stored — without your raw file data ever reaching the server. For details on how encryption and key generation work, see [Security Model](./security-model.md).
 
 ---
 
@@ -22,7 +22,7 @@ The user is also given the option to provide a custom display name for the file.
 
 ## 3. Obtaining the encryption key
 
-The CLI obtains the Data Encryption Key (DEK) for the file based on the mode selected — vault or no-vault. See [Security Model](./security_model.md) for how keys are generated in each mode.
+The CLI obtains the Data Encryption Key (DEK) for the file based on the mode selected — vault or no-vault. See [Security Model](./security-model.md) for how keys are generated in each mode.
 
 ---
 

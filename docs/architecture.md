@@ -63,13 +63,13 @@ Hashdrop uses four AWS services:
 ## Architectural Trade-offs and Scaling
 
 The current deployment prioritizes simplicity and cost-efficiency.  
-For a detailed discussion of infrastructure trade-offs and potential scaling paths (including serverless and load-balanced architectures), see [Scaling Strategy](./scaling_strategy.md).
+For a detailed discussion of infrastructure trade-offs and potential scaling paths (including serverless and load-balanced architectures), see [Scaling Strategy](./scaling-strategy.md).
 
 ---
 
 ## Related Documentation
 
-- [Security Model](./security_model.md) - encryption, key management, and the local vault
+- [Security Model](./security-model.md) - encryption, key management, and the local vault
 - [File Upload](./uploading.md) - detailed walkthrough of the upload flow
 - [Downloading and Decryption](./decryption-and-downloading.md) - detailed walkthrough of the download and decryption flow
 - [Authentication](./authentication.md) - token lifecycle and session management

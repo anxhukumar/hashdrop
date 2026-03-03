@@ -2,7 +2,7 @@
 
 ## Overview
 
-The decrypt command handles the full flow of downloading and decrypting a Hashdrop file locally. The file URL passed to the command is a Hashdrop backend endpoint that coordinates access control and delivery before your device ever receives any data. For details on how encryption and key generation work, see [Security Model](./security_model.md).
+The decrypt command handles the full flow of downloading and decrypting a Hashdrop file locally. The file URL passed to the command is a Hashdrop backend endpoint that coordinates access control and delivery before your device ever receives any data. For details on how encryption and key generation work, see [Security Model](./security-model.md).
 
 ---
 
