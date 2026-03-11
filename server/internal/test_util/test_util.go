@@ -11,7 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const sqlSchemaDir = "../sql/schema"
+const sqlSchemaDir = "../sql/migrations"
 
 func SetupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
