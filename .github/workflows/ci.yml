@@ -17,6 +17,13 @@ jobs:
               uses: actions/setup-go@v5
               with:
                 go-version: "1.26.0"
+
+            - name: Install sqlc
+              run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+            - name: Generate database code
+              working-directory: ./server
+              run: sqlc generate
             
             - name: Run server tests
               working-directory: ./server
@@ -45,6 +52,13 @@ jobs:
               uses: actions/setup-go@v5
               with:
                 go-version: "1.26.0"
+
+            - name: Install sqlc
+              run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+            - name: Generate database code
+              working-directory: ./server
+              run: sqlc generate
             
             - name: Code format check on server
               working-directory: ./server
