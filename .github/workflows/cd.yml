@@ -64,24 +64,25 @@ jobs:
                 
                 ssh -o StrictHostKeyChecking=no \
                     -i private_key \
-                    ${{secrets.VM_USER}}@${{secrets.VM_HOST}} << EOF
 
-                    export PORT="${{ secrets.PORT }}"
-                    export PLATFORM="${{ secrets.PLATFORM }}"
-                    export DB="${{ secrets.DB }}"
-                    export JWT_SECRET="${{ secrets.JWT_SECRET }}"
-                    export CLOUDFRONT_KEY_PAIR_ID="${{ secrets.CLOUDFRONT_KEY_PAIR_ID }}"
-                    export CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
-                    export USERID_HASHING_SALT="${{ secrets.USERID_HASHING_SALT }}"
-                    export OTP_HASHING_SECRET="${{ secrets.OTP_HASHING_SECRET }}"
-                    export REFRESH_TOKEN_HASHING_SECRET_VERSION_1="${{ secrets.REFRESH_TOKEN_HASHING_SECRET_VERSION_1 }}"
-                    export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
-                    export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
-                    export AWS_REGION="${{ secrets.AWS_REGION }}"
+                    ${{secrets.VM_USER}}@${{secrets.VM_HOST}} <<'EOF'
 
-                    cd /home/ubuntu
-                    docker compose pull
-                    docker compose up -d
-                    docker image prune -f
-                    
-                    EOF
+export PORT="${{ secrets.PORT }}"
+export PLATFORM="${{ secrets.PLATFORM }}"
+export DB="${{ secrets.DB }}"
+export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+export CLOUDFRONT_KEY_PAIR_ID="${{ secrets.CLOUDFRONT_KEY_PAIR_ID }}"
+export CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
+export USERID_HASHING_SALT="${{ secrets.USERID_HASHING_SALT }}"
+export OTP_HASHING_SECRET="${{ secrets.OTP_HASHING_SECRET }}"
+export REFRESH_TOKEN_HASHING_SECRET_VERSION_1="${{ secrets.REFRESH_TOKEN_HASHING_SECRET_VERSION_1 }}"
+export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+export AWS_REGION="${{ secrets.AWS_REGION }}"
+
+cd /home/ubuntu
+docker compose pull
+docker compose up -d
+docker image prune -f
+
+EOF
