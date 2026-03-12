@@ -2,7 +2,8 @@ name: cd
 
 on: 
     push:
-        branches: [main]
+        tags:
+          - "v*"
 
 jobs:
     deploy:
@@ -12,7 +13,17 @@ jobs:
         steps:
             - name: Check out code
               uses: actions/checkout@v4
-            
+              with:
+                fetch-depth: 0
+
+            - name: Ensure tag is on main
+              run: |
+                git fetch origin main
+                if ! git branch -r --contains $GITHUB_SHA | grep origin/main; then
+                  echo "Tag is not on main branch. Exiting."
+                  exit 1
+                fi
+                
             - name: Set up Go
               uses: actions/setup-go@v5
               with:
@@ -43,7 +54,7 @@ jobs:
                 context: .
                 push: true
                 tags: |
-                    anxhukumar/hashdrop-server:1.0.0
+                    anxhukumar/hashdrop-server:${{github.ref_name}}
                     anxhukumar/hashdrop-server:latest
             
             - name: Copy deployment files to VM
