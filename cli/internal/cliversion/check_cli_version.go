@@ -25,7 +25,7 @@ func CheckCliVersion(verbose bool) error {
 	// compare the version recevied from our version
 	if cliVersion.CompatibleVersion != config.CurrentCliVersion {
 		fmt.Println("Update Your Hashdrop CLI.")
-		fmt.Printf("Current version: %s\n", config.CurrentCliVersion)
+		fmt.Printf("Your version: %s\n", config.CurrentCliVersion)
 		fmt.Printf("Latest  version: %s\n\n", cliVersion.CompatibleVersion)
 		fmt.Println("To update, run:")
 		fmt.Println("go install github.com/anxhukumar/hashdrop/cli/cmd/hashdrop@latest")
