@@ -28,7 +28,7 @@ func CreateAndUpdateVault(fileDEK []byte, fileID uuid.UUID, Verbose bool) error 
 	// If it exists update the vault with new (fileID -> fileDEK).
 	if !exists {
 		ui.PrintVaultCreationInfo()
-		fmt.Scanln() // waits until Enter is pressed to continue // #nosec G104
+		fmt.Scanln() // #nosec G104 // waits until Enter is pressed to continue
 		var vaultMasterKey []byte
 		var vaultData Vault
 		for {
