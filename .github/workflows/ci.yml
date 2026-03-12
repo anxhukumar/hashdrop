@@ -34,7 +34,7 @@ jobs:
             
             - name: Gosec check on server
               working-directory: ./server
-              run: gosec ./...
+              run: gosec -exclude-generated ./...
             
             - name: Gosec check on cli
               working-directory: ./cli

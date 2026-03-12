@@ -180,13 +180,23 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	RespondWithJSON(
+	err = RespondWithJSON(
 		w,
 		http.StatusOK,
 		FileUploadSuccessResponse{
 			S3ObjectKey:      ObjectKey,
 			UploadedFileSize: verifiedFileSize,
 		})
+	if err != nil {
+		msgToDev := "error responding with JSON"
+		RespondWithError(
+			w,
+			logger,
+			msgToDev,
+			err,
+			http.StatusInternalServerError,
+		)
+	}
 
 	logger.Info(
 		"user completed file upload verification",

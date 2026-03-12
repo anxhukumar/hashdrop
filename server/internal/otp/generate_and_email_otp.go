@@ -36,7 +36,7 @@ func GenerateAndEmailOtp(
 		OtpHash: hashedOtp,
 	})
 	if err != nil {
-		return fmt.Errorf("Error creating otp record in database: %w", err)
+		return fmt.Errorf("error creating otp record in database: %w", err)
 	}
 
 	// Send otp to users email address
@@ -45,9 +45,9 @@ func GenerateAndEmailOtp(
 		// Delete the otp record from database as that will be useless now
 		err = queries.DeleteOtpByOtpID(ctx, otpID)
 		if err != nil {
-			return fmt.Errorf("Error while deleting otp from database using otp id: %w", err)
+			return fmt.Errorf("error while deleting otp from database using otp id: %w", err)
 		}
-		return fmt.Errorf("Error while sending otp to users email: %w", err)
+		return fmt.Errorf("error while sending otp to users email: %w", err)
 	}
 
 	return nil
