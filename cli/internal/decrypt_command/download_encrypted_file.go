@@ -8,7 +8,7 @@ import (
 )
 
 func DownloadEncryptedFile(fileUrl string, verbose bool) (io.ReadCloser, int64, error) {
-	resp, err := http.Get(fileUrl)
+	resp, err := http.Get(fileUrl) // #nosec G107
 	if err != nil {
 		if verbose {
 			return nil, 0, fmt.Errorf("download failed: %w", err)

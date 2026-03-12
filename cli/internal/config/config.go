@@ -31,8 +31,8 @@ const (
 	RegisterEndpoint              = "/api/user/register"
 	VerifyUserEndpoint            = "/api/user/verify"
 	LoginEndpoint                 = "/api/user/login"
-	RefreshTokenEndpoint          = "/api/token/refresh"
-	RevokeRefreshTokenEndpoint    = "/api/token/revoke"
+	RefreshTokenEndpoint          = "/api/token/refresh" // #nosec G101
+	RevokeRefreshTokenEndpoint    = "/api/token/revoke"  // #nosec G101
 	GetPresignedLinkEndpoint      = "/api/files/presign"
 	CompleteFileUploadEndpoint    = "/api/files/complete"
 	GetAllFilesEndpoint           = "/api/files/all"

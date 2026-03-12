@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ErrInvalidVaultKeyOrCorrupted = errors.New("Failed to unlock vault. The password may be incorrect or the vault file may be corrupted.")
+	ErrInvalidVaultKeyOrCorrupted = errors.New("failed to unlock vault, the password may be incorrect or the vault file may be corrupted")
 	ErrVaultNotFound              = errors.New("vault not found")
 )
 

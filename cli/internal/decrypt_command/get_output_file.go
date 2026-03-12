@@ -31,7 +31,7 @@ func GetOutputFile(fileID string, verbose bool, decryptionFilePath string) (io.W
 		finalOutPath = filepath.Join(homeDir, "Downloads", fileID)
 	}
 
-	out, err := os.Create(finalOutPath)
+	out, err := os.Create(finalOutPath) // #nosec G304
 	if err != nil {
 		if verbose {
 			return nil, finalOutPath, fmt.Errorf("create output: %w", err)

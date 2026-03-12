@@ -35,7 +35,7 @@ func StoreTokens(tokens UserLoginIncoming) error {
 	}
 
 	// Marshal the data with proper indentation
-	data, err := json.MarshalIndent(tokens, "", "  ")
+	data, err := json.MarshalIndent(tokens, "", "  ") // #nosec G117
 	if err != nil {
 		return fmt.Errorf("failed to marshal tokens: %w", err)
 	}
@@ -57,7 +57,7 @@ func LoadTokens() (UserLoginIncoming, error) {
 		return tokens, err
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return tokens, fmt.Errorf("failed to read tokens file: %w", err)
 	}

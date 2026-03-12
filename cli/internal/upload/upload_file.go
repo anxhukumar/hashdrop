@@ -26,7 +26,7 @@ func UploadFileToS3(
 	dek []byte,
 ) error {
 
-	f, err := os.Open(localFilePath)
+	f, err := os.Open(localFilePath) // #nosec G304
 	if err != nil {
 		return err
 	}

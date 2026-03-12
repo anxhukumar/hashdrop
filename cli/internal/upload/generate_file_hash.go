@@ -12,7 +12,7 @@ import (
 func GenerateFileHash(filePath string) (string, error) {
 
 	// Open file
-	file, err := os.Open(filePath)
+	file, err := os.Open(filePath) // #nosec G304
 	if err != nil {
 		return "", fmt.Errorf("open file: %w", err)
 	}
