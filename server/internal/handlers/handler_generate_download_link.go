@@ -74,7 +74,7 @@ func (s *Server) HandlerGenerateDownloadLink(w http.ResponseWriter, r *http.Requ
 		s.Cfg.CloudfrontURLPrefix,
 		objectPath,
 		s.Cfg.CloudfrontKeyPairID,
-		s.Cfg.CloudfrontPrivateKeyPath,
+		s.Cfg.CloudfrontPrivateKey,
 	)
 	if err != nil {
 		msgToDev := "error generating signed cloudfront url"

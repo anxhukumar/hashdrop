@@ -5,31 +5,31 @@ import (
 )
 
 func TestGenerateSignedCloudfrontURL(t *testing.T) {
-	validKeyPath := writeTempPrivateKey(t)
+	validKey := generateTempPrivateKey(t)
 
 	tests := []struct {
-		name           string
-		urlPrefix      string
-		objectPath     string
-		keyPairID      string
-		privateKeyPath string
-		wantErr        bool
+		name       string
+		urlPrefix  string
+		objectPath string
+		keyPairID  string
+		privateKey string
+		wantErr    bool
 	}{
 		{
-			name:           "Valid inputs",
-			urlPrefix:      "https://example.cloudfront.net/",
-			objectPath:     "file/test.txt",
-			keyPairID:      "K1234567890",
-			privateKeyPath: validKeyPath,
-			wantErr:        false,
+			name:       "Valid inputs",
+			urlPrefix:  "https://example.cloudfront.net/",
+			objectPath: "file/test.txt",
+			keyPairID:  "K1234567890",
+			privateKey: validKey,
+			wantErr:    false,
 		},
 		{
-			name:           "Invalid private key path",
-			urlPrefix:      "https://example.cloudfront.net/",
-			objectPath:     "file/test.txt",
-			keyPairID:      "K1234567890",
-			privateKeyPath: "/no/such/key.pem",
-			wantErr:        true,
+			name:       "Invalid private key path",
+			urlPrefix:  "https://example.cloudfront.net/",
+			objectPath: "file/test.txt",
+			keyPairID:  "K1234567890",
+			privateKey: "wrong-key",
+			wantErr:    true,
 		},
 	}
 
@@ -39,7 +39,7 @@ func TestGenerateSignedCloudfrontURL(t *testing.T) {
 				tt.urlPrefix,
 				tt.objectPath,
 				tt.keyPairID,
-				tt.privateKeyPath,
+				tt.privateKey,
 			)
 
 			if (err != nil) != tt.wantErr {
