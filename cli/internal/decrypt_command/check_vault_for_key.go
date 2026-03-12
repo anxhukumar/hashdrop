@@ -44,7 +44,7 @@ func CheckVaultForKey(fileID string, verbose bool) ([]byte, error) {
 
 		vaultMasterKey, err = encryption.DeriveVaultMasterKey(pass)
 		if err != nil {
-			return nil, fmt.Errorf("Error deriving vault master key: %w", err)
+			return nil, fmt.Errorf("error deriving vault master key: %w", err)
 		}
 
 		// Load vault and decrypt it using vault key

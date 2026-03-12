@@ -100,7 +100,7 @@ Use --reveal-key to display the encryption key from your local vault.
 
 				vaultMasterKey, err = encryption.DeriveVaultMasterKey(pass)
 				if err != nil {
-					return fmt.Errorf("Error deriving vault master key: %w", err)
+					return fmt.Errorf("error deriving vault master key: %w", err)
 				}
 
 				// Load vault and decrypt it using vault key

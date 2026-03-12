@@ -11,7 +11,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const sqlSchemaDir = "../sql/schema"
+const sqlSchemaDir = "../sql/migrations"
 
 func SetupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
@@ -52,7 +52,7 @@ func runMigrations(t *testing.T, db *sql.DB) {
 	for _, name := range names {
 		path := filepath.Join(sqlSchemaDir, name)
 
-		sqlBytes, err := os.ReadFile(path)
+		sqlBytes, err := os.ReadFile(path) // #nosec G304 -- path comes from trusted migration directory
 		if err != nil {
 			t.Fatalf("failed to read migration %s: %v", name, err)
 		}

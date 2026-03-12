@@ -28,7 +28,7 @@ func CreateAndUpdateVault(fileDEK []byte, fileID uuid.UUID, Verbose bool) error 
 	// If it exists update the vault with new (fileID -> fileDEK).
 	if !exists {
 		ui.PrintVaultCreationInfo()
-		fmt.Scanln() // waits until Enter is pressed to continue
+		fmt.Scanln() // #nosec G104 // waits until Enter is pressed to continue
 		var vaultMasterKey []byte
 		var vaultData Vault
 		for {
@@ -102,7 +102,7 @@ func CreateAndUpdateVault(fileDEK []byte, fileID uuid.UUID, Verbose bool) error 
 
 			vaultMasterKey, err = DeriveVaultMasterKey(pass)
 			if err != nil {
-				return fmt.Errorf("Error deriving vault master key: %w", err)
+				return fmt.Errorf("error deriving vault master key: %w", err)
 			}
 
 			// Load vault and decrypt it using vault key

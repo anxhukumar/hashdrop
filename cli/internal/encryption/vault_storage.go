@@ -65,7 +65,7 @@ func LoadVault(vaultMasterKey []byte) (Vault, error) {
 		return vaultData, err
 	}
 
-	encData, err := os.ReadFile(path)
+	encData, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		if os.IsNotExist(err) {
 			return vaultData, ErrVaultNotFound

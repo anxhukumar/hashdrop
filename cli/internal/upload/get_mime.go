@@ -11,7 +11,7 @@ import (
 func GetMime(filepath string) (string, error) {
 
 	// Open file
-	file, err := os.Open(filepath)
+	file, err := os.Open(filepath) // #nosec G304
 	if err != nil {
 		return "", fmt.Errorf("open file: %w", err)
 	}

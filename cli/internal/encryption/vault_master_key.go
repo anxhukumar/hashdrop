@@ -110,7 +110,7 @@ func LoadVaultMetadata() (VaultKeyMetadata, error) {
 		return res, err
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return res, fmt.Errorf("failed to read vault metadata file: %w", err)
 	}

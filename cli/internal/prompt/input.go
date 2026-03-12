@@ -23,7 +23,7 @@ func ReadLine(label string) (string, error) {
 // Special function for password
 func ReadPassword(label string) (string, error) {
 	fmt.Print(label)
-	bytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+	bytes, err := term.ReadPassword(int(os.Stdin.Fd())) // #nosec G115
 	fmt.Println()
 	if err != nil {
 		return "", errors.New("could not read password, please try again")

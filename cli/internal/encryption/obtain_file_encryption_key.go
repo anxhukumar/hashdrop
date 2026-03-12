@@ -28,7 +28,7 @@ func ObtainFileEncryptionKey(noVault, verbose bool) (fileDEK []byte, fileSalt []
 	} else {
 		// If vault is not being used
 		ui.PrintNoVaultWarning()
-		fmt.Scanln() // waits until Enter is pressed to continue
+		fmt.Scanln() // #nosec G104 // waits until Enter is pressed to continue
 		for {
 
 			pass, err := prompt.ReadPassword("Enter passphrase: ")

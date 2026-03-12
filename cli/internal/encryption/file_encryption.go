@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"math"
 
 	"github.com/anxhukumar/hashdrop/cli/internal/config"
 )
@@ -48,8 +49,13 @@ func EncryptFileStreaming(src io.Reader, dst io.Writer, dek []byte) error {
 			}
 
 			// Add length of ciphertext
+			cipherLen := len(ciphertext)
+			if cipherLen > math.MaxUint32 {
+				return fmt.Errorf("ciphertext too large")
+			}
+
 			buflen := make([]byte, 4)
-			binary.BigEndian.PutUint32(buflen, uint32(len(ciphertext)))
+			binary.BigEndian.PutUint32(buflen, uint32(cipherLen))
 			if _, err := dst.Write(buflen); err != nil {
 				return err
 			}

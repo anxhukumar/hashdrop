@@ -101,8 +101,9 @@ func main() {
 	mux.Handle("GET /api/cli/version", rl.CliVersion(http.HandlerFunc(server.HandlerCliVersion)))
 
 	serv := &http.Server{
-		Handler: mux,
-		Addr:    ":" + cfg.Port,
+		Handler:           mux,
+		Addr:              ":" + cfg.Port,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	go func() {

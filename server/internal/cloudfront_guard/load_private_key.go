@@ -9,7 +9,7 @@ import (
 )
 
 func loadPrivateKey(path string) (*rsa.PrivateKey, error) {
-	keyBytes, err := os.ReadFile(path)
+	keyBytes, err := os.ReadFile(path) // #nosec G304 -- path comes from trusted config
 	if err != nil {
 		return nil, err
 	}
