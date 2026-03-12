@@ -1,0 +1,56 @@
+services:
+
+  hashdrop-app:
+    image: anxhukumar/hashdrop-server:latest
+
+    networks:
+      - hashdrop-net
+
+    volumes:
+      - ./hashdrop-files/storage:/app/storage
+      - ./hashdrop-files/logs:/app/logs
+
+    environment:
+      PORT: ${PORT}
+      PLATFORM: ${PLATFORM}
+      DB: ${DB}
+      JWT_SECRET: ${JWT_SECRET}
+      CLOUDFRONT_KEY_PAIR_ID: ${CLOUDFRONT_KEY_PAIR_ID}
+      CLOUDFRONT_PRIVATE_KEY: ${CLOUDFRONT_PRIVATE_KEY}
+      USERID_HASHING_SALT: ${USERID_HASHING_SALT}
+      OTP_HASHING_SECRET: ${OTP_HASHING_SECRET}
+      REFRESH_TOKEN_HASHING_SECRET_VERSION_1: ${REFRESH_TOKEN_HASHING_SECRET_VERSION_1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+
+    restart: unless-stopped
+
+  caddy:
+    depends_on:
+      - hashdrop-app
+    image: caddy:latest
+    container_name: hashdrop-caddy
+
+    networks:
+      - hashdrop-net
+    
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./hashdrop-static-site/site:/site
+    
+    restart: unless-stopped
+
+networks:
+  hashdrop-net:
+    name: hashdrop-net
+
+volumes:
+  caddy_data:
+  caddy_config:

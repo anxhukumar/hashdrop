@@ -8,8 +8,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const envFilePath = "secrets/.env"
-
 type Config struct {
 	Port string
 
@@ -27,8 +25,8 @@ type Config struct {
 
 	JWTSecret string
 
-	CloudfrontKeyPairID      string
-	CloudfrontPrivateKeyPath string
+	CloudfrontKeyPairID  string
+	CloudfrontPrivateKey string
 
 	UserIDHashSalt              string
 	OtpHashingSecret            string
@@ -49,8 +47,8 @@ type Config struct {
 // Load environment variables and return a config struct
 func LoadConfig() *Config {
 
-	if err := godotenv.Load(envFilePath); err != nil {
-		log.Fatalf("Error: could not load .env file: %v", err)
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("No .env found")
 	}
 
 	cfg := &Config{
@@ -70,8 +68,8 @@ func LoadConfig() *Config {
 
 		JWTSecret: getEnv("JWT_SECRET"),
 
-		CloudfrontKeyPairID:      getEnv("CLOUDFRONT_KEY_PAIR_ID"),
-		CloudfrontPrivateKeyPath: getEnv("CLOUDFRONT_PRIVATE_KEY_PATH"),
+		CloudfrontKeyPairID:  getEnv("CLOUDFRONT_KEY_PAIR_ID"),
+		CloudfrontPrivateKey: getEnv("CLOUDFRONT_PRIVATE_KEY"),
 
 		UserIDHashSalt:              getEnv("USERID_HASHING_SALT"),
 		OtpHashingSecret:            getEnv("OTP_HASHING_SECRET"),

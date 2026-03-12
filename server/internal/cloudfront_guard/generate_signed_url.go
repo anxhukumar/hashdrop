@@ -9,13 +9,13 @@ import (
 
 const signedURLduration = 2 // minutes
 
-func GenerateSignedCloudfrontURL(cloudfrontURLPrefix, objectPath, cloudfrontKeyPairID, privateKeyPath string) (string, error) {
-	privateKey, err := loadPrivateKey(privateKeyPath)
+func GenerateSignedCloudfrontURL(cloudfrontURLPrefix, objectPath, cloudfrontKeyPairID, privateKey string) (string, error) {
+	key, err := loadPrivateKey(privateKey)
 	if err != nil {
 		return "", fmt.Errorf("error while loading private key: %w", err)
 	}
 
-	signer := sign.NewURLSigner(cloudfrontKeyPairID, privateKey)
+	signer := sign.NewURLSigner(cloudfrontKeyPairID, key)
 
 	signedURL, err := signer.Sign(
 		cloudfrontURLPrefix+objectPath,

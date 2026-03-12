@@ -5,16 +5,11 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"os"
 )
 
-func loadPrivateKey(path string) (*rsa.PrivateKey, error) {
-	keyBytes, err := os.ReadFile(path) // #nosec G304 -- path comes from trusted config
-	if err != nil {
-		return nil, err
-	}
+func loadPrivateKey(key string) (*rsa.PrivateKey, error) {
 
-	block, _ := pem.Decode(keyBytes)
+	block, _ := pem.Decode([]byte(key))
 	if block == nil {
 		return nil, fmt.Errorf("failed to decode PEM")
 	}

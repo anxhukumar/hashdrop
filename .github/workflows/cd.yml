@@ -1,0 +1,87 @@
+name: cd
+
+on: 
+    push:
+        branches: [main]
+
+jobs:
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+  
+        steps:
+            - name: Check out code
+              uses: actions/checkout@v4
+            
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                go-version: "1.26.0"
+
+            - name: Install sqlc
+              run: go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+            - name: Generate database code
+              working-directory: ./server
+              run: sqlc generate
+            
+            - name: Build server executable
+              run: scripts/buildserver.sh
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v4
+            
+            - name: Login to Docker Hub
+              uses: docker/login-action@v4
+              with:
+                username: ${{secrets.DOCKER_HUB_USERNAME}}
+                password: ${{secrets.DOCKER_HUB_TOKEN}}
+
+            - name: Build image and push
+              uses: docker/build-push-action@v6
+              with:
+                context: .
+                push: true
+                tags: |
+                    anxhukumar/hashdrop-server:1.0.0
+                    anxhukumar/hashdrop-server:latest
+            
+            - name: Copy deployment files to VM
+              run: |
+                echo "${{secrets.SSH_EC2_PRIVATE_KEY}}" > private_key
+                chmod 600 private_key
+
+                scp -o StrictHostKeyChecking=no \
+                    -i private_key \
+                    docker-compose.yml \
+                    Caddyfile \
+                    ${{secrets.VM_USER}}@${{secrets.VM_HOST}}:/home/ubuntu/
+            
+            - name: Deploy to VM
+              run: |
+                echo "${{secrets.SSH_EC2_PRIVATE_KEY}}" > private_key
+                chmod 600 private_key
+                
+                ssh -o StrictHostKeyChecking=no \
+                    -i private_key \
+                    ${{secrets.VM_USER}}@${{secrets.VM_HOST}} << EOF
+
+                    export PORT="${{ secrets.PORT }}"
+                    export PLATFORM="${{ secrets.PLATFORM }}"
+                    export DB="${{ secrets.DB }}"
+                    export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+                    export CLOUDFRONT_KEY_PAIR_ID="${{ secrets.CLOUDFRONT_KEY_PAIR_ID }}"
+                    export CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
+                    export USERID_HASHING_SALT="${{ secrets.USERID_HASHING_SALT }}"
+                    export OTP_HASHING_SECRET="${{ secrets.OTP_HASHING_SECRET }}"
+                    export REFRESH_TOKEN_HASHING_SECRET_VERSION_1="${{ secrets.REFRESH_TOKEN_HASHING_SECRET_VERSION_1 }}"
+                    export AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}"
+                    export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+                    export AWS_REGION="${{ secrets.AWS_REGION }}"
+
+                    cd /home/ubuntu
+                    docker compose pull
+                    docker compose up -d
+                    docker image prune -f
+                    
+                    EOF
