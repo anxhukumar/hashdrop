@@ -8,7 +8,6 @@ services:
 
     volumes:
       - ./hashdrop-files/storage:/app/storage
-      - ./hashdrop-files/logs:/app/logs
 
     environment:
       PORT: ${PORT}
@@ -23,6 +22,12 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION}
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
     restart: unless-stopped
 
@@ -45,6 +50,12 @@ services:
       - caddy_config:/config
       - ./hashdrop-static-site/site:/site
     
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
     restart: unless-stopped
 
 networks:

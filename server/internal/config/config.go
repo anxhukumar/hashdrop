@@ -48,7 +48,7 @@ type Config struct {
 func LoadConfig() *Config {
 
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
+		log.Println("Using system environment variables")
 	}
 
 	cfg := &Config{
@@ -84,7 +84,7 @@ func LoadConfig() *Config {
 
 		AwsRegion: getEnv("AWS_REGION"),
 
-		CliVersion: "1.0.0",
+		CliVersion: "1.1.0",
 	}
 
 	return cfg

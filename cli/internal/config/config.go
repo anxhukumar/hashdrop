@@ -59,5 +59,5 @@ const (
 	// ================================
 	// Current CLI Version
 	// ================================
-	CurrentCliVersion = "1.0.0"
+	CurrentCliVersion = "1.1.0"
 )
