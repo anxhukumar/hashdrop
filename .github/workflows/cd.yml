@@ -64,7 +64,6 @@ jobs:
                 
                 ssh -o StrictHostKeyChecking=no \
                     -i private_key \
-
                     ${{secrets.VM_USER}}@${{secrets.VM_HOST}} <<'EOF'
 
                 export PORT="${{ secrets.PORT }}"
