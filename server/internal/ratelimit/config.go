@@ -32,7 +32,11 @@ type Limiters struct {
 
 	// CLI version check
 	CliVersionCheckGlobalLimiter *rate.Limiter
-	CliVersionCheckIpLimiter     *keyRateLimiter
+	CliVersionCheckIPLimiter     *keyRateLimiter
+
+	// Download link redirect
+	DownloadLinkGlobalLimiter *rate.Limiter
+	DownloadLinkIPLimiter     *keyRateLimiter
 
 	// ---------------------------------------
 	// PRIVATE
@@ -89,7 +93,14 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 		// Global: 100 requests per second. Burst: 200.
 		// IP: 10 requests per second. Burst: 20.
 		CliVersionCheckGlobalLimiter: rate.NewLimiter(rate.Limit(50), 100),
-		CliVersionCheckIpLimiter:     NewKeyRateLimiter(ctx, rate.Limit(10), 20),
+		CliVersionCheckIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(10), 20),
+
+		// Redirects users to CDN to download encrypted blob.
+		// Global: 30 requests per second. Burst: 60.
+		// IP: 5 requests per second. Burst: 10.
+		// Each file already enforces a max of 3 download requests per day (handled separately).
+		DownloadLinkGlobalLimiter: rate.NewLimiter(rate.Limit(30), 60),
+		DownloadLinkIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(5), 10),
 
 		// PRIVATE (S3 / DB INTENSIVE)
 

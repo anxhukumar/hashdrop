@@ -13,7 +13,7 @@ func (s *Server) HandlerVerifyUser(w http.ResponseWriter, r *http.Request) {
 
 	// Get decoded incoming user verification data
 	var userVerificationData VerifyRequest
-	if err := DecodeJson(r, &userVerificationData); err != nil {
+	if err := DecodeJson(w, r, &userVerificationData); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(

@@ -63,7 +63,7 @@ func (b *Binder) FileMeta(next http.Handler) http.Handler {
 // CliVersion handles the cli version check reqeusts only.
 func (b *Binder) CliVersion(next http.Handler) http.Handler {
 	h := GlobalRateLimit(b.Limiters.CliVersionCheckGlobalLimiter, b.Server)(next)
-	h = IPRateLimit(h, b.Limiters.CliVersionCheckIpLimiter, b.Server)
+	h = IPRateLimit(h, b.Limiters.CliVersionCheckIPLimiter, b.Server)
 	return h
 }
 
@@ -71,5 +71,12 @@ func (b *Binder) CliVersion(next http.Handler) http.Handler {
 func (b *Binder) OtpLimit(next http.Handler) http.Handler {
 	h := GlobalRateLimit(b.Limiters.OTPRateGlobalLimiter, b.Server)(next)
 	h = IPRateLimit(h, b.Limiters.OTPRateIPLimiter, b.Server)
+	return h
+}
+
+// Download handles the number of download requests users can send.
+func (b *Binder) Download(next http.Handler) http.Handler {
+	h := GlobalRateLimit(b.Limiters.DownloadLinkGlobalLimiter, b.Server)(next)
+	h = IPRateLimit(h, b.Limiters.DownloadLinkIPLimiter, b.Server)
 	return h
 }

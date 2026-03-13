@@ -11,7 +11,7 @@ func (s *Server) HandlerRevokeToken(w http.ResponseWriter, r *http.Request) {
 
 	// Get decoded refresh token from client
 	var refreshToken RefreshToken
-	if err := DecodeJson(r, &refreshToken); err != nil {
+	if err := DecodeJson(w, r, &refreshToken); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(

@@ -15,7 +15,7 @@ func (s *Server) HandlerCompleteFileUpload(w http.ResponseWriter, r *http.Reques
 
 	// Get decoded incoming file json data
 	var FileUploadMetadata FileUploadMetadata
-	if err := DecodeJson(r, &FileUploadMetadata); err != nil {
+	if err := DecodeJson(w, r, &FileUploadMetadata); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(
