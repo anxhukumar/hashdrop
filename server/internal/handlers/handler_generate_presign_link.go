@@ -16,7 +16,7 @@ func (s *Server) HandlerGeneratePresignLink(w http.ResponseWriter, r *http.Reque
 
 	// Get decoded incoming file metadata
 	var FileMetadata FileUploadRequest
-	if err := DecodeJson(r, &FileMetadata); err != nil {
+	if err := DecodeJson(w, r, &FileMetadata); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(

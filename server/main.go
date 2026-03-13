@@ -97,7 +97,7 @@ func main() {
 	mux.Handle("GET /api/files/salt", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetPassphraseSalt))))
 	mux.Handle("GET /api/files/hash", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerGetFileHash))))
 	mux.Handle("DELETE /api/files", server.Auth(rl.FileMeta(http.HandlerFunc(server.HandlerDeleteFile))))
-	mux.Handle("GET /files/download/{userIDHash}/{fileID}", http.HandlerFunc(server.HandlerGenerateDownloadLink))
+	mux.Handle("GET /files/download/{userIDHash}/{fileID}", rl.Download(http.HandlerFunc(server.HandlerGenerateDownloadLink)))
 	mux.Handle("GET /api/cli/version", rl.CliVersion(http.HandlerFunc(server.HandlerCliVersion)))
 
 	serv := &http.Server{

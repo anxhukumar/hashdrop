@@ -16,7 +16,7 @@ func (s *Server) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Get decoded incoming user json data
 	var userIncoming UserIncoming
-	if err := DecodeJson(r, &userIncoming); err != nil {
+	if err := DecodeJson(w, r, &userIncoming); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(

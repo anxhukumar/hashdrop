@@ -14,7 +14,7 @@ func (s *Server) HandlerDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	// Get decoded incoming user login data
 	var userLoginIncoming UserLoginIncoming
-	if err := DecodeJson(r, &userLoginIncoming); err != nil {
+	if err := DecodeJson(w, r, &userLoginIncoming); err != nil {
 		msgToDev := "user posted invalid json data"
 		msgToClient := "invalid JSON payload"
 		RespondWithWarn(
