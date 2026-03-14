@@ -1,4 +1,9 @@
 # Hashdrop
+![CI](https://github.com/anxhukumar/hashdrop/actions/workflows/ci.yml/badge.svg)
+[![Go Version](https://img.shields.io/badge/go-1.25.1-blue)](https://go.dev/)
+![Encryption](https://img.shields.io/badge/encryption-AES--GCM-green)
+![CLI](https://img.shields.io/badge/interface-CLI-orange)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
 
 A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
 
