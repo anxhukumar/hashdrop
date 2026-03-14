@@ -2,6 +2,10 @@
 
 A zero-trust, command-line file storage tool built in Go. Files are encrypted on your device before upload — the server and storage layer only ever see encrypted blobs. Your plaintext data never touches the server.
 
+<p align="center">
+  <img src="./docs/assets/demo.gif" alt="Demo" width="800"/>
+</p>
+
 ---
 
 ## How It Works
