@@ -97,10 +97,10 @@ func NewDefaultLimiters(ctx context.Context) *Limiters {
 
 		// Redirects users to CDN to download encrypted blob.
 		// Global: 30 requests per second. Burst: 60.
-		// IP: 5 requests per second. Burst: 10.
+		// IP: 3 requests per hour. Burst: 10.
 		// Each file already enforces a max of 3 download requests per day (handled separately).
 		DownloadLinkGlobalLimiter: rate.NewLimiter(rate.Limit(30), 60),
-		DownloadLinkIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(5), 10),
+		DownloadLinkIPLimiter:     NewKeyRateLimiter(ctx, rate.Limit(3.0/3600.0), 10),
 
 		// PRIVATE (S3 / DB INTENSIVE)
 
